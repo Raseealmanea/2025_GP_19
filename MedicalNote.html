@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Medical Notes — Demo</title>
+  <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Add Medical Note</h1>
+
+    <form id="noteForm" class="card">
+   
+
+      <!-- Note Title -->
+      <div class="row">
+        <label>Patient ID *</label>
+        <input name="title" type="text" required />
+      </div>
+
+ 
+      <div class="row">
+        <label>Note *</label>
+        <textarea 
+          name="note_text" 
+          rows="6" 
+          style="width:100%; padding:10px; border:1px solid #e6e9ef; border-radius:8px; font-size:14px;" 
+          required></textarea>
+      </div>
+      
+     
+      <div class="row actions">
+        <button type="submit">Submit</button>
+      </div>
+
+      <div id="message" role="status" aria-live="polite"></div>
+    </form>
+
+
+</body>
+</html>
