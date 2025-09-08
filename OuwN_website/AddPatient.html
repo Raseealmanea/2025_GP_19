@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Add Patient — Demo</title>
+  <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Add Patient</h1>
+
+    <form id="patientForm" class="card">
+      <div class="row">
+        <label>Full Name *</label>
+        <input name="full_name" type="text" required />
+      </div>
+
+      <div class="row">
+        <label>Date of Birth *</label>
+        <input name="dob" type="date" required />
+      </div>
+
+      <div class="row">
+        <label>Gender *</label>
+        <select name="gender" required>
+          <option value="" disabled selected hidden>Choose</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label>National ID</label>
+        <input name="national_id" type="text" />
+      </div>
+
+      <div class="row">
+        <label>Phone</label>
+        <input id="phone" name="phone" type="tel" />
+      </div>      
+
+      <div class="row">
+        <label>Email</label>
+        <input name="email" type="email" />
+      </div>
+
+      <div class="row">
+        <label>Address</label>
+        <input name="address" type="text" />
+      </div>
+
+      <div class="row">
+        <label>Blood Type</label>
+        <input name="blood_type" type="text" placeholder="e.g. O+, A-" />
+      </div>
+
+      <div class="row">
+        <label>Emergency Contact</label>
+        <input name="emergency_contact" type="text" />
+      </div>
+
+      <div class="row actions">
+        <button type="submit">Add Patient</button>
+      </div>
+    </form>
+
+  
+</body>
+</html>
