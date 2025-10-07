@@ -1,0 +1,140 @@
+
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #F4F1FB, #E1D4F2);
+    color: #2d004d;
+}
+
+a {
+    color: #2d004d;
+    text-decoration: none;
+}
+a:hover {
+    color: #9975C1;
+}
+
+
+.btn, button {
+    background: #9975C1;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: transform 0.3s, background 0.3s;
+}
+.btn:hover, button:hover {
+    transform: scale(1.05);
+    background: #7f5ea5;
+}
+
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+}
+header .logo img {
+    height: 80px;
+    width: auto;
+}
+header h1 {
+    font-size: 28px;
+    color: #9975C1;
+    font-weight: bold;
+}
+nav a {
+    margin: 0 15px;
+    font-weight: 500;
+}
+
+.hero {
+    text-align: center;
+    padding: 100px 20px;
+    background: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+    color: #4a2d73;
+}
+.hero h2 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #9975C1;
+}
+.hero p {
+    font-size: 20px;
+    margin-bottom: 30px;
+}
+.hero .quote {
+    margin-top: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #9975C1;
+    font-family: 'Amiri', serif;
+}
+.hero .quote2 {
+    margin-top: 20px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #9975C1;
+    font-family: 'Amiri', serif;
+}
+
+section.att {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 40px;
+    background: #ffffff; /* white box */
+    border-radius: 20px;
+    box-shadow: 0px 8px 25px rgba(0,0,0,0.08);
+    scroll-margin-top: 300px;
+    text-align: center;
+}
+section.att h3 {
+    font-size: 32px;
+    color: #9975C1;
+    margin-bottom: 20px;
+}
+section.att p {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    margin-top: 50px;
+}
+
+.reset-page-body, .token-page-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.reset-container, .token-container {
+    background: rgba(255,255,255,0.2);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.reset-container input, .token-container input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+}
