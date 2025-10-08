@@ -231,3 +231,93 @@ footer {
       grid-template-columns: 1fr 1fr;
     }
   }
+/* ===== Shared styles for all form pages ===== */
+.form-page {
+  /* theme tokens (override per page if needed) */
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --accent:#9975C1;
+  --muted:#6b7280;
+
+  /* override homepage look on these pages */
+  margin:0;
+  
+  color:#111;
+  font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, "Helvetica Neue", Arial;
+}
+
+.form-page * { box-sizing: border-box; }
+
+/* layout */
+.form-page .container { max-width:900px; margin:28px auto; padding:16px; }
+.form-page h1 { margin:0 0 12px; font-size:24px; color:var(--accent); }
+.form-page .card { background:var(--card); padding:16px; border-radius:12px; box-shadow:0 6px 18px rgba(20,20,50,0.06); margin-bottom:16px; }
+
+.form-page .row { display:flex; flex-direction:column; margin-bottom:10px; }
+.form-page .row label { font-size:13px; color:var(--muted); margin-bottom:6px; }
+.form-page .row input,
+.form-page .row select,
+.form-page .row textarea { padding:10px; border:1px solid #e6e9ef; border-radius:8px; font-size:14px; }
+
+/* actions aligned right (replaces margin-left:700px hack) */
+.form-page .actions { display:flex; gap:8px; align-items:center; justify-content:flex-end; }
+.form-page .actions button { margin-left:auto; }
+
+/* buttons on form pages (wins over global .btn, button) */
+.form-page button {
+  background:var(--accent);
+  border:0;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.form-page button:disabled { opacity:0.6; cursor:not-allowed; }
+
+.form-page #patientsList table { width:100%; border-collapse:collapse; }
+.form-page #patientsList th,
+.form-page #patientsList td { padding:8px; border-bottom:1px solid #f0f2f7; text-align:left; font-size:14px; }
+.form-page .smallBtn { background:transparent; color:var(--accent); border:1px solid var(--accent); padding:6px 8px; border-radius:8px; cursor:pointer; }
+.form-page #message { margin-top:8px; color:green; }
+
+/* focus styles */
+.form-page .row input:focus,
+.form-page .row select:focus,
+.form-page .row textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(153, 117, 193, 0.3);
+}
+
+/* responsive */
+@media (min-width:700px){
+  .form-page .row { flex-direction:row; gap:12px; align-items:center; }
+  .form-page .row label { width:160px; margin-bottom:0; }
+  .form-page .row input,
+  .form-page .row select { flex:1; }
+}
+/* Sticky footer without changing layout */
+.form-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-page > header,
+.form-page > footer {
+  flex: 0 0 auto;          /* don't let header/footer grow/shrink */
+}
+
+.form-page > main {
+  flex: 1 0 auto;          /* only main grows vertically */
+  width: 100%;             /* prevent shrink */
+}
+
+/* Keep your content width consistent */
+.form-page .container {
+  max-width: 900px;
+  width: min(900px, 92%);  /* same feel on small screens */
+  margin: 28px auto;
+}
+
+
