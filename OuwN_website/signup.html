@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up • OuwN</title>
+ 
+
+
+  <!-- <link rel="stylesheet" href="stylee.css"> -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='stylee.css') }}">
+</head>
+<body class="auth-page-body">
+  <header>
+    <div class="logo">
+      <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo">
+    </div>
+    <nav>
+      <a href="{{ url_for('home') }}#about">About</a>
+      <a href="{{ url_for('home') }}#vision">Vision</a>
+    </nav>
+  </header>
+
+  <main class="auth-container">
+    <h2 class="auth-title">Create your account</h2>
+    <p class="auth-subtitle">Join OuwN and save time for what matters.</p>
+
+    <form method="POST" action="{{ url_for('signup') }}" class="auth-form">
+      <!-- CSRF if using Flask-WTF -->
+      <!-- {{ form.csrf_token }} -->
+
+      <div class="grid-2">
+        <div>
+          <label for="first_name">First name</label>
+          <input id="first_name" name="first_name" type="text" placeholder="e.g., Sara" required>
+        </div>
+        <br>
+        <div>
+          <label for="last_name">Last name</label>
+          <input id="last_name" name="last_name" type="text" placeholder="e.g., Al-Harbi" required>
+        </div>
+      </div>
+
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" placeholder="Choose a username" required>
+
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" placeholder="you@example.com" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" placeholder="Create a password" required>
+
+      <button type="submit" class="btn">Sign up</button>
+    </form>
+
+    <p class="auth-meta">
+      Already have an account?
+      <a href="login.html">Log In</a>
+    </p>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 OuwN. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>
