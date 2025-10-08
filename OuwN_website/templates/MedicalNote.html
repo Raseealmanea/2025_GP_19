@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Medical Notes — Demo</title>
+  <link rel="stylesheet" href="stylee.css">
+</head>
+
+<body class="form-page medical-note">
+  <header>
+    <div class="logo">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo">
+
+    </div>
+    <nav>
+        <a href="#about">About</a>
+        <a href="#vision">Vision</a>
+    </nav>
+</header>
+
+  <main class="container">
+    <h1>Add Medical Note</h1>
+
+    <form id="noteForm" class="card">
+      <div class="row">
+        <label>Patient ID *</label>
+        <input name="title" type="text" required />
+      </div>
+
+      <div class="row">
+        <label>Note *</label>
+        <textarea name="note_text" rows="6" style="width:100%"required></textarea>
+      </div>
+
+      <div class="row actions">
+        <button type="submit">Submit</button>
+      </div>
+
+      <div id="message" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+   <footer>
+        <p>&copy; 2025 OuwN. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
