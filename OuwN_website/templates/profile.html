@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Profile • OuwN</title>
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='stylee.css') }}">
+  
+</head>
+
+<body class="auth-page-body">
+<header>
+  <div class="logo">
+    <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo">
+  </div>
+  <nav>
+    <a href="{{ url_for('home') }}#about">About</a>
+    <a href="{{ url_for('home') }}#vision">Vision</a>
+  </nav>
+</header>
+
+<main class="auth-container">
+  <div class="profile-container">
+    <div class="profile-header">
+      <img src="doctor.png" alt="Profile Image" class="profile-img">
+      <h2 id="name" contenteditable="false">Dr. Sarah Al-harbi</h2>
+    </div>
+
+    <div class="profile-info">
+      <h3>
+        Profile Information
+        <i class="fa-solid fa-pen edit-icon" id="edit-btn" onclick="toggleEditAll()"></i>
+      </h3>
+
+      <p>
+        <strong>Username:</strong>
+        <span id="username" contenteditable="false">@SaraH12</span>
+      </p>
+
+      <p>
+        <strong>Email:</strong>
+        <span id="email" contenteditable="false">sarah.johnson@example.com</span>
+      </p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>&copy; 2025 OuwN. All Rights Reserved.</p>
+</footer>
+
+<script>
+  function toggleEditAll() {
+    const fields = ['name', 'username', 'email'].map(id => document.getElementById(id));
+    const editBtn = document.getElementById('edit-btn');
+
+    // Check if currently in edit mode
+    const isEditing = fields[0].contentEditable === "true";
+
+    fields.forEach(field => {
+      field.contentEditable = !isEditing;
+      if (!isEditing) field.focus();
+    });
+
+    if (!isEditing) {
+      // Entering edit mode
+      editBtn.style.color = "#0077ff";
+      editBtn.classList.replace("fa-pen", "fa-check");
+    } else {
+      // Exiting edit mode
+      fields.forEach(f => {
+        f.style.backgroundColor = "#e8ffe8";
+        setTimeout(() => f.style.backgroundColor = "", 800);
+      });
+      editBtn.style.color = "#555";
+      editBtn.classList.replace("fa-check", "fa-pen");
+    }
+  }
+</script>
+</body>
+</html>
