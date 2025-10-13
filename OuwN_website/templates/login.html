@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login • OuwN</title>
+    <!-- Use your existing stylesheet -->
+
+
+    <!-- <link rel="stylesheet" href="stylee.css"> -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylee.css') }}">
+
+
+</head>
+<body class="auth-page-body">
+<header class="header">
+    <div class="header-left">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo" class="logo-img">
+    </div>
+    <div class="header-right">
+        <nav class="header-nav">
+            <a href="{{ url_for('home') }}#about">About</a>
+            <a href="{{ url_for('home') }}#vision">Vision</a>
+        </nav>
+    </div>
+</header>
+
+<main class="auth-container">
+    <h2 class="auth-title">Welcome back</h2>
+    <p class="auth-subtitle">Sign in to continue caring for your patients.</p>
+
+    <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+
+
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" placeholder="Enter your name" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" placeholder="Enter your password" required>
+
+        <button type="submit" onclick="window.location.href='{{ url_for('patient_dashboard') }}'"class="btn">Log in</button>
+    </form>
+    <p class="auth-meta" style="margin-top:10px">
+        Forgot your password? <a class="link-sm" href="{{ url_for('reset_password') }}">Reset password</a>
+    </p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+    {% endwith %}
+
+    <p class="auth-meta">
+        Don’t have an account?
+        <a href="{{ url_for('signup') }}">Sign Up</a>
+
+    </p>
+</main>
+
+<footer>
+    <p>&copy; 2025 OuwN. All Rights Reserved.</p>
+</footer>
+</body>
+</html>
