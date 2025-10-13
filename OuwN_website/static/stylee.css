@@ -498,3 +498,25 @@ footer {
       from { opacity: 0; transform: translateY(-5px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* === Keep footer at bottom & center dashboard content === */
+    body {
+      min-height: 100vh;          /* make body fill full height */
+      display: flex;
+      flex-direction: column;
+    }
+    
+    main.dashboard {
+      flex: 1;                    /* let main take up leftover space */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;    /* vertically center only main content */
+      align-items: center;        /* horizontally center */
+      text-align: center;
+    }
+    
+    footer {
+      margin-top: auto;           /* pushes footer to bottom */
+    }
+    
+    
