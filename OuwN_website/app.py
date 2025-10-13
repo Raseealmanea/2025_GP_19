@@ -5,6 +5,27 @@ import secrets
 app = Flask(__name__)
 app.secret_key = 'secret-key'  # use a strong secret in production
 
+@app.route('/signup')
+def signup():
+    return render_template('signup.html')
+
+@app.route('/dashboard')
+def patient_dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/add_patient')
+def add_patient():
+    return render_template('AddPatient.html')
+
+@app.route('/write_notes')
+def write_notes():
+    return render_template('MedicalNotes.html')
+
+@app.route('/doctor_profile')
+def doctor_profile():
+    return render_template('profile.html')
+
+
 # ---- Email configuration ----
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
@@ -32,6 +53,7 @@ def login():
         # Handle login logic here
         return redirect(url_for('login'))
     return render_template('login.html')
+
 
 # ---- Forgot password page ----
 @app.route('/reset_password', methods=['GET', 'POST'])
