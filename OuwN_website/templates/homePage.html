@@ -8,15 +8,16 @@
 </head>
 <body>
 
-<header>
-    <div class="logo">
-        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo">
-
+<header class="header">
+    <div class="header-left">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo" class="logo-img">
     </div>
-    <nav>
-        <a href="#about">About</a>
-        <a href="#vision">Vision</a>
-    </nav>
+    <div class="header-right">
+        <nav class="header-nav">
+            <a href="{{ url_for('home') }}#about">About</a>
+            <a href="{{ url_for('home') }}#vision">Vision</a>
+        </nav>
+    </div>
 </header>
 
 <div class="hero">
@@ -31,7 +32,7 @@
     <h3>About Us</h3>
     <p>
         At OuwN, we are dedicated to simplifying healthcare documentation and medical coding.
-        Our mission is to empower doctors with tools that save time, reduce stress,
+        Our mission is to empower healthcare professionals with tools that save time, reduce stress,
         and ensure accurate patient records.
     </p>
 </section>
@@ -50,6 +51,5 @@
     <footer>
         <p>&copy; 2025 OuwN. All Rights Reserved.</p>
     </footer>
-
 </body>
 </html>
