@@ -1,47 +1,82 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Medical Notes — Demo</title>
-  <link rel="stylesheet" href="stylee.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Medical Notes — Demo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='stylee.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <script>
+        function toggleDropdown(event) {
+          event.stopPropagation(); // Prevent click from bubbling up
+          document.getElementById("dropdownMenu").classList.toggle("show");
+        }
+
+
+        document.addEventListener("click", function() {
+          const dropdown = document.getElementById("dropdownMenu");
+          if (dropdown.classList.contains("show")) {
+            dropdown.classList.remove("show");
+          }
+        });
+
+        function logoutUser() {
+          // Clear any saved session or token
+          localStorage.clear();
+          sessionStorage.clear();
+
+
+          window.location.href = "{{ url_for('login') }}";
+        }
+    </script>
 </head>
 
 <body class="form-page medical-note">
-  <header>
-    <div class="logo">
-        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo">
-
+<header class="header">
+    <div class="header-left">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo" class="logo-img">
     </div>
-    <nav>
-        <a href="#about">About</a>
-        <a href="#vision">Vision</a>
-    </nav>
-</header>
+    <div class="header-right">
 
-  <main class="container">
+
+        <div class="profile-icon" onclick="toggleDropdown(event)">
+            <img src="{{ url_for('static', filename='doctor.png') }}" alt="Profile Icon">
+
+            <div class="dropdown" id="dropdownMenu">
+                <a href="{{ url_for('doctor_profile') }}"><i class="fa-solid fa-user"></i> Profile</a>
+                <a href="#" onclick="logoutUser(); return false;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+            </div>
+        </div>
+        <nav class="header-nav">
+            <a href="{{ url_for('home') }}#about">About</a>
+            <a href="{{ url_for('home') }}#vision">Vision</a>
+        </nav>
+    </div>
+</header>
+<main class="container">
     <h1>Add Medical Note</h1>
 
     <form id="noteForm" class="card">
-      <div class="row">
-        <label>Patient ID *</label>
-        <input name="title" type="text" required />
-      </div>
+        <div class="row">
+            <label>Patient ID *</label>
+            <input name="title" type="text" required />
+        </div>
 
-      <div class="row">
-        <label>Note *</label>
-        <textarea name="note_text" rows="6" style="width:100%"required></textarea>
-      </div>
+        <div class="row">
+            <label>Note *</label>
+            <textarea name="note_text" rows="6" style="width:100%"required></textarea>
+        </div>
 
-      <div class="row actions">
-        <button type="submit">Submit</button>
-      </div>
+        <div class="row actions">
+            <button type="submit" onclick="location.href='{{ url_for('patient_dashboard') }}'">Submit</button>
+        </div>
 
-      <div id="message" role="status" aria-live="polite"></div>
+        <div id="message" role="status" aria-live="polite"></div>
     </form>
-  </main>
-   <footer>
-        <p>&copy; 2025 OuwN. All Rights Reserved.</p>
-    </footer>
+</main>
+<footer>
+    <p>&copy; 2025 OuwN. All Rights Reserved.</p>
+</footer>
 </body>
 </html>
