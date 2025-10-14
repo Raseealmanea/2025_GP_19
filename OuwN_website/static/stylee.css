@@ -228,15 +228,43 @@ footer {
   }
 
 
+  /* Make First name + Last name full width like other inputs */
 .grid-2 {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
   }
+  
+
   @media (min-width: 640px) {
     .grid-2 {
       grid-template-columns: 1fr 1fr;
     }
   }
+  
+/* Center the form card inside the grid page */
+.auth-container {
+    justify-self: center;   /* <-- fixes the “hugging left edge” issue */
+    max-width: 540px;
+    width: 100%;
+    margin: 40px 0;         /* vertical spacing */
+    padding: 40px 32px;
+  }
+  
+  /* Comfortable left/right gutters across the page */
+  .auth-page-body { 
+    padding-inline: clamp(16px, 6vw, 80px);
+  }
+  
+  header, footer {
+    padding-inline: clamp(16px, 6vw, 80px);
+  }
+  
+  /* (Good practice) Ensure padding doesn't blow widths */
+  *, *::before, *::after { box-sizing: border-box; }
+
+
+
 /* ===== Shared styles for all form pages ===== */
 .form-page {
   /* theme tokens (override per page if needed) */
@@ -520,3 +548,4 @@ footer {
     }
     
     
+
