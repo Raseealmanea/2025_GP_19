@@ -121,32 +121,6 @@ $stmt->close();
   <title>Profile • OuwN</title>
   <link rel="stylesheet" href="stylee.css">
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #f7f9fc;
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 15px 40px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    header .logo img {
-      height: 45px;
-    }
-    header nav a {
-      margin-left: 25px;
-      text-decoration: none;
-      color: #333;
-      font-weight: 500;
-    }
-    header nav a:hover {
-      color: #007bff;
-    }
     .auth-container {
       max-width: 600px;
       margin: 60px auto;
@@ -161,11 +135,11 @@ $stmt->close();
       text-align: center;
     }
     .profile-header img {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 10px;
+      width: 120px;
+height: 120px;
+border-radius: 50%;
+object-fit: cover;
+border: 3px solid #9975c2;
     }
     .profile-header h2 {
       margin: 10px 0;
@@ -200,22 +174,26 @@ $stmt->close();
       background: #f9f9f9;
     }
     .profile-info input[readonly] {
-      background: #f2f2f2;
-      border-color: #ddd;
+      background: #f9f9f9;
+      border: 1px solid #f9f9f9;
     }
+    .profile-header h3 {
+      margin-bottom: 10px;
+      color: #9975c2;
+     }
     .password-toggle {
       display: block;
       margin: 25px auto 0;
-      background: #007bff;
+      background: #9975c2;
       color: white;
       border: none;
       padding: 10px 20px;
-      border-radius: 8px;
+      border-radius: 15px;
       cursor: pointer;
       font-size: 15px;
     }
     .password-toggle:hover {
-      background: #0056b3;
+      background: #7a5e9b;
     }
     .password-section {
       display: none;
@@ -237,16 +215,16 @@ $stmt->close();
     }
     .btn {
       display: block;
-      background: #007bff;
+      background: #9975c2;
       color: white;
       padding: 10px 20px;
       border: none;
-      border-radius: 8px;
+      border-radius: 15px;
       cursor: pointer;
       margin: 20px auto 0;
     }
     .btn:hover {
-      background: #0056b3;
+      background: #7a5e9b;
     }
     .banner {
       position: fixed; /* Fixed position */
@@ -363,4 +341,5 @@ $stmt->close();
 </script>
 
 </body>
+
 </html>
