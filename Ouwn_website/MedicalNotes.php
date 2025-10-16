@@ -23,6 +23,8 @@
     }
     //for FK in patient table
     $HealthCareP = $_SESSION['user_id'];
+    $prefilledPid = $_GET['patient_id'] ?? '';
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
      // 1) Read & validate inputs
@@ -85,7 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form id="noteForm" class="card"  method="POST" action="">
             <div class="row">
                 <label>Patient ID *</label>
-                <input name="pid" id="pid" type="text" required />
+                <input name="pid" id="pid" type="text" 
+                value="<?= htmlspecialchars($prefilledPid) ?>" readonly required />
+
             </div>
 
             <div class="row">
