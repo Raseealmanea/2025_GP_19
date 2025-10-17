@@ -3,7 +3,8 @@
 session_start();
 //destroy it
 session_destroy();
-// Redirect to login page
+// Redirect to home page
 header("Location:homePage.php"); 
 exit();
 ?>
+
