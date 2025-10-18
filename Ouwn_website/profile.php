@@ -11,7 +11,7 @@ $DB_HOST = "127.0.0.1";
 $DB_USER = 'root';
 $DB_PASS = 'root';
 $DB_NAME = 'OuwnDB';
-$port = 3306;
+$port = 8889;
 $TABLE   = 'HealthCareP';
 
 // ---- Connect ----
@@ -156,11 +156,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
             <input type="text" name="username" value="<?= htmlspecialchars($user['UserID']) ?>" readonly required></p>
             <p><strong>Email:</strong><br>
             <input type="email" name="email" value="<?= htmlspecialchars($user['Email']) ?>" readonly required></p>
-     
+            
             <!-- Action buttons (appear only when editing) -->
             <div class="action-buttons-profile" id="actionButtons">
                 <button type="button" class="btn-profile discard" id="discardBtn">Discard Changes</button>
                 <button type="submit" class="btn-profile save">Save Changes</button>
+            </div>
+            
+             <!-- Return to dashboard button -->
+            <div class="return-link right">
+              <a href="dashboard.php"><i class="fa-solid fa-arrow-left"></i> Return to Dashboard</a>
             </div>
         </form>
     </main>
