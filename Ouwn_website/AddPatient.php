@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             if (mysqli_stmt_execute($stmt)) {
                 // PRG pattern: 303 See Other to prevent resubmits on refresh
-                header("Location: dashboard.php?msg=added", true, 303);
+                header("Location: dashboard.php?msg=patient_added", true, 303);
                 exit;
             } else {
                 $errors[] = "Insert failed: " . mysqli_stmt_error($stmt);
