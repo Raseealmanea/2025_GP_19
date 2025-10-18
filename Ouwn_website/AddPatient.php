@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="row actions">
                 <button type="submit">Add Patient</button> 
             </div>
-<!--Redirect to dashboard when the pattient is added-->
+
             <div class="return-link right">
                 <a href="dashboard.php"><i class="fa-solid fa-arrow-left"></i> Return to Dashboard</a>
             </div>
@@ -191,3 +191,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </footer>
 </body>
 </html>
+
