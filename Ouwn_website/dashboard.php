@@ -38,6 +38,23 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
 
     <main class="dashboard container">
         <h1>Welcome, Dr. <?= htmlspecialchars($userName) ?></h1>
+<!--Alert if Pattient is added -->
+        <?php if (isset($_GET['msg']) && $_GET['msg'] === 'added'): ?>
+            <div id="toast" class="toast show">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Patient added successfully!</span>
+            </div>
+            <script>
+                // Fade out the popup after 3 seconds
+                setTimeout(() => {
+                const toast = document.getElementById('toast');
+                if (toast) toast.classList.remove('show');
+                }, 3500);
+
+                // Remove the ?msg=added from the URL (clean URL)
+                window.history.replaceState({}, document.title, window.location.pathname);
+            </script>
+        <?php endif; ?>
 
         <div class="dashboard-actions">
             <button class="add-btn" onclick="location.href='AddPatient.php'"><i class="fa-solid fa-user-plus"></i> Add Patient</button>
