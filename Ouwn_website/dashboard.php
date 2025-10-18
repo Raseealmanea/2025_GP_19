@@ -38,24 +38,42 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
 
     <main class="dashboard container">
         <h1>Welcome, Dr. <?= htmlspecialchars($userName) ?></h1>
-<!--Alert if Pattient is added -->
-        <?php if (isset($_GET['msg']) && $_GET['msg'] === 'added'): ?>
-            <div id="toast" class="toast show">
-                <i class="fa-solid fa-circle-check"></i>
-                <span>Patient added successfully!</span>
-            </div>
-            <script>
-                // Fade out the popup after 3 seconds
-                setTimeout(() => {
-                const toast = document.getElementById('toast');
-                if (toast) toast.classList.remove('show');
-                }, 3500);
+<!--Alert if Pattient is added or Note is added for patien -->
+        <?php if (isset($_GET['msg'])): ?>
+            <?php
+                // Determine the message based on URL parameter
+                $msgText = '';
+                switch ($_GET['msg']) {
+                    case 'patient_added':
+                    case 'added': // keep backward compatibility
+                        $msgText = 'Patient added successfully!';
+                        break;
+                    case 'note_added':
+                        $msgText = 'Medical note added successfully!';
+                        break;
+                    default:
+                        $msgText = '';
+                }
+            ?>
 
-                // Remove the ?msg=added from the URL (clean URL)
-                window.history.replaceState({}, document.title, window.location.pathname);
-            </script>
+            <?php if ($msgText): ?>
+                <div id="toast" class="toast show">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span><?= htmlspecialchars($msgText) ?></span>
+                </div>
+                <script>
+                    // Fade out after 3.5 seconds
+                    setTimeout(() => {
+                        const toast = document.getElementById('toast');
+                        if (toast) toast.classList.remove('show');
+                    }, 3500);
+
+                    // Remove ?msg=... from the URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                </script>
+            <?php endif; ?>
         <?php endif; ?>
-
+        
         <div class="dashboard-actions">
             <button class="add-btn" onclick="location.href='AddPatient.php'"><i class="fa-solid fa-user-plus"></i> Add Patient</button>
         </div>
