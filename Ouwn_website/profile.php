@@ -11,11 +11,11 @@ $DB_HOST = "127.0.0.1";
 $DB_USER = 'root';
 $DB_PASS = 'root';
 $DB_NAME = 'OuwnDB';
-$port = 8889;
+$port = 3306;
 $TABLE   = 'HealthCareP';
 
 // ---- Connect ----
-$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME,$port);
+$mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $port);
 $mysqli->set_charset('utf8mb4');
 
 // ---- Session check ----
@@ -27,6 +27,14 @@ if (!isset($_SESSION['user_id'])) {
 $userID = $_SESSION['user_id'];
 $successMsg = '';
 $errorMsg = '';
+
+// ---- Fetch current user info ----
+$stmt = $mysqli->prepare("SELECT UserID, Email, Name FROM $TABLE WHERE UserID = ?");
+$stmt->bind_param('s', $userID);
+$stmt->execute();
+$result = $stmt->get_result();
+$currentUser = $result->fetch_assoc();
+$stmt->close();
 
 // ---- Handle Profile Update ----
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update_profile') {
@@ -43,76 +51,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
             throw new RuntimeException('Invalid email format.');
         }
 
-        $check = $mysqli->prepare("SELECT 1 FROM $TABLE WHERE (Email = ? OR UserID = ?) AND UserID != ?");
-        $check->bind_param('sss', $newEmail, $newUsername, $userID);
-        $check->execute();
-        $check->store_result();
-        if ($check->num_rows > 0) {
-            throw new RuntimeException('Email or username already in use by another account.');
-        }
-        $check->close();
-
-        $stmt = $mysqli->prepare("UPDATE $TABLE SET Name = ?, Email = ?, UserID = ? WHERE UserID = ?");
-        $stmt->bind_param('ssss', $newName, $newEmail, $newUsername, $userID);
-        $stmt->execute();
-        $stmt->close();
-
-        $_SESSION['user_id'] = $newUsername;
-        $successMsg = '✅ Profile updated successfully.';
-    } catch (Throwable $e) {
-        $errorMsg = $e->getMessage();
-    }
-}
-
-// ---- Handle Password Update ----
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update_password') {
-    $oldPassword = $_POST['old_password'] ?? '';
-    $newPassword = $_POST['new_password'] ?? '';
-    $confirmPassword = $_POST['confirm_password'] ?? '';
-
-    try {
-        if ($oldPassword === '' || $newPassword === '' || $confirmPassword === '') {
-            throw new RuntimeException('All password fields are required.');
+        // ---- Check if anything actually changed ----
+        if (
+            $newName === $currentUser['Name'] &&
+            $newEmail === $currentUser['Email'] &&
+            $newUsername === $currentUser['UserID']
+        ) {
+            // Nothing changed → skip update and message
+            throw new RuntimeException('No changes were made.');
         }
 
-        if ($newPassword !== $confirmPassword) {
-            throw new RuntimeException('New password and confirmation do not match.');
-        }
-
-        if (!preg_match('/^(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[\W_]).{8,}$/', $newPassword)) {
-            throw new RuntimeException('Password must contain uppercase, lowercase, number, special character, and be at least 8 characters long.');
-        }
-
-        $stmt = $mysqli->prepare("SELECT Password FROM $TABLE WHERE UserID = ?");
-        $stmt->bind_param('s', $userID);
+        // ---- Check if email already exists for another user ----
+        $stmt = $mysqli->prepare("SELECT COUNT(*) AS cnt FROM $TABLE WHERE Email = ? AND UserID != ?");
+        $stmt->bind_param('ss', $newEmail, $userID);
         $stmt->execute();
         $result = $stmt->get_result();
         $row = $result->fetch_assoc();
         $stmt->close();
 
-        if (!$row || !password_verify($oldPassword, $row['Password'])) {
-            throw new RuntimeException('Old password is incorrect.');
+        if ($row['cnt'] > 0) {
+            throw new RuntimeException('Invalid Email.');
         }
 
-        $hashedNew = password_hash($newPassword, PASSWORD_DEFAULT);
-        $stmt = $mysqli->prepare("UPDATE $TABLE SET Password = ? WHERE UserID = ?");
-        $stmt->bind_param('ss', $hashedNew, $userID);
+        // ---- Check if username already exists for another user ----
+        $stmt = $mysqli->prepare("SELECT COUNT(*) AS cnt FROM $TABLE WHERE UserID = ? AND UserID != ?");
+        $stmt->bind_param('ss', $newUsername, $userID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($row['cnt'] > 0) {
+            throw new RuntimeException('Invalid Username.');
+        }
+
+        // ---- Perform the update ----
+        $stmt = $mysqli->prepare("UPDATE $TABLE SET Name = ?, Email = ?, UserID = ? WHERE UserID = ?");
+        $stmt->bind_param('ssss', $newName, $newEmail, $newUsername, $userID);
         $stmt->execute();
         $stmt->close();
 
-        $successMsg = '🔒 Password updated successfully.';
-    } catch (Throwable $e) {
-        $errorMsg = $e->getMessage();
-    }
-}
+        // ---- Update session username ----
+        $_SESSION['user_id'] = $newUsername;
+        $successMsg = '✅ Profile updated successfully.';
 
-// ---- Fetch User Info ----
-$stmt = $mysqli->prepare("SELECT UserID, Email, Name FROM $TABLE WHERE UserID = ?");
-$stmt->bind_param('s', $_SESSION['user_id']);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-$stmt->close();
+        // ---- Refresh user data immediately ----
+        $stmt = $mysqli->prepare("SELECT UserID, Email, Name FROM $TABLE WHERE UserID = ?");
+        $stmt->bind_param('s', $_SESSION['user_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+
+    } catch (Throwable $e) {
+        // Only show errors that are not "no changes made"
+        if ($e->getMessage() !== 'No changes were made.') {
+            $errorMsg = $e->getMessage();
+        }
+
+        // Reload original data from DB
+        $stmt = $mysqli->prepare("SELECT UserID, Email, Name FROM $TABLE WHERE UserID = ?");
+        $stmt->bind_param('s', $_SESSION['user_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+    }
+} else {
+    $user = $currentUser;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -120,179 +127,43 @@ $stmt->close();
   <meta charset="UTF-8" />
   <title>Profile • OuwN</title>
   <link rel="stylesheet" href="stylee.css">
-  <style>
-    .auth-container {
-      max-width: 600px;
-      margin: 60px auto;
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .profile-header {
-      position: relative;
-      text-align: center;
-    }
-    .profile-header img {
-      width: 120px;
-height: 120px;
-border-radius: 50%;
-object-fit: cover;
-border: 3px solid #9975c2;
-    }
-    .profile-header h2 {
-      margin: 10px 0;
-      font-weight: 600;
-      font-size: 22px;
-      color: #333;
-    }
-    .edit-btn {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 22px;
-      color: #007bff;
-    }
-    .edit-btn:hover {
-      color: #0056b3;
-    }
-    .profile-info {
-      text-align: left;
-      margin-top: 25px;
-    }
-    .profile-info input {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-top: 6px;
-      font-size: 15px;
-      background: #f9f9f9;
-    }
-    .profile-info input[readonly] {
-      background: #f9f9f9;
-      border: 1px solid #f9f9f9;
-    }
-    .profile-header h3 {
-      margin-bottom: 10px;
-      color: #9975c2;
-     }
-    .password-toggle {
-      display: block;
-      margin: 25px auto 0;
-      background: #9975c2;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 15px;
-      cursor: pointer;
-      font-size: 15px;
-    }
-    .password-toggle:hover {
-      background: #7a5e9b;
-    }
-    .password-section {
-      display: none;
-      text-align: left;
-      margin-top: 20px;
-      border-top: 1px solid #ddd;
-      padding-top: 20px;
-    }
-    .password-section.active {
-      display: block;
-    }
-    .password-section input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      background: #f9f9f9;
-    }
-    .btn {
-      display: block;
-      background: #9975c2;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
-      margin: 20px auto 0;
-    }
-    .btn:hover {
-      background: #7a5e9b;
-    }
-    .banner {
-      position: fixed; /* Fixed position */
-      top: 20px; /* Space from the top */
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000; /* Keep it above other elements */
-      padding: 12px 16px;
-      border-radius: 10px;
-      margin: 0; /* Remove margin */
-      max-width: 540px;
-      text-align: center;
-      font-weight: 500;
-      display: none; /* Initially hidden */
-    }
-    .banner.show { display: block; }
-    .banner.err { background: #f44336; color: #fff; }
-    .banner.ok  { background: #2e7d32; color: #fff; }
-    footer {
-      text-align: center;
-      color: #555;
-      margin-top: 40px;
-      padding: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
-<?php if ($errorMsg): ?>
-  <div class="banner err show"><?= htmlspecialchars($errorMsg) ?></div>
-<?php endif; ?>
-<?php if ($successMsg): ?>
-  <div class="banner ok show"><?= htmlspecialchars($successMsg) ?></div>
-<?php endif; ?>
-    <?php
-        include "header.html";
-    ?>
-<main class="auth-container">
-  <div class="profile-header">
-    <img src="doctor.png" alt="Profile Image">
-    <h2><?= htmlspecialchars($user['Name']) ?></h2>
-    <button type="button" id="editBtn" class="edit-btn" title="Edit profile">✏️</button>
-  </div>
+    <?php if ($errorMsg): ?>
+        <div class="banner-profile err show"><?= htmlspecialchars($errorMsg) ?></div>
+    <?php endif; ?>
+    <?php if ($successMsg): ?>
+        <div class="banner-profile ok show"><?= htmlspecialchars($successMsg) ?></div>
+    <?php endif; ?>
 
-  <!-- Profile Form -->
-  <form method="POST" class="profile-info" id="profileForm">
-    <input type="hidden" name="action" value="update_profile">
-    <p><strong>Name:</strong><br>
-      <input type="text" name="name" value="<?= htmlspecialchars($user['Name']) ?>" readonly required></p>
-    <p><strong>Username:</strong><br>
-      <input type="text" name="username" value="<?= htmlspecialchars($user['UserID']) ?>" readonly required></p>
-    <p><strong>Email:</strong><br>
-      <input type="email" name="email" value="<?= htmlspecialchars($user['Email']) ?>" readonly required></p>
-  </form>
+    <?php include "header.html"; ?>
 
-  <button type="button" id="togglePassword" class="password-toggle">Change Password</button>
-
-  <form method="POST" class="password-section" id="passwordSection">
-    <input type="hidden" name="action" value="update_password">
-    <p><strong>Old Password:</strong><br>
-      <input type="password" name="old_password" required></p>
-    <p><strong>New Password:</strong><br>
-      <input type="password" name="new_password" required></p>
-    <p><strong>Confirm New Password:</strong><br>
-      <input type="password" name="confirm_password" required></p>
-    <button type="submit" class="btn">Update Password</button>
-  </form>
-</main>
+    <main class="auth-container-profile">
+       <div class="profile-header">
+         <img src="profile.png" alt="Profile Image">
+         <h2>Profile Information</h2>
+         <button type="button" id="editBtn" class="edit-btn-profile" title="Edit profile"> <i class="fa-solid fa-pen edit-icon"></i></button>
+       </div>
+        
+       <!-- Profile Form -->
+        <form method="POST" class="profile-info" id="profileForm">
+            <input type="hidden" name="action" value="update_profile">
+            <p><strong>Name:</strong><br>
+            <input type="text" name="name" value="<?= htmlspecialchars($user['Name']) ?>" readonly required></p>
+            <p><strong>Username:</strong><br>
+            <input type="text" name="username" value="<?= htmlspecialchars($user['UserID']) ?>" readonly required></p>
+            <p><strong>Email:</strong><br>
+            <input type="email" name="email" value="<?= htmlspecialchars($user['Email']) ?>" readonly required></p>
+     
+            <!-- Action buttons (appear only when editing) -->
+            <div class="action-buttons-profile" id="actionButtons">
+                <button type="button" class="btn-profile discard" id="discardBtn">Discard Changes</button>
+                <button type="submit" class="btn-profile save">Save Changes</button>
+            </div>
+        </form>
+    </main>
 
 <footer>
   <p>&copy; 2025 OuwN. All Rights Reserved.</p>
@@ -302,44 +173,56 @@ border: 3px solid #9975c2;
   const editBtn = document.getElementById('editBtn');
   const form = document.getElementById('profileForm');
   const inputs = form.querySelectorAll('input:not([type=hidden])');
-  const togglePassword = document.getElementById('togglePassword');
-  const passwordSection = document.getElementById('passwordSection');
+  const actionButtons = document.getElementById('actionButtons');
+  const discardBtn = document.getElementById('discardBtn');
 
   let isEditing = false;
+  const originalValues = {};
+
+  // Store initial values
+  inputs.forEach(input => originalValues[input.name] = input.value);
 
   editBtn.addEventListener('click', () => {
     if (!isEditing) {
       inputs.forEach(i => i.removeAttribute('readonly'));
-      editBtn.textContent = '💾';
-      editBtn.title = 'Save changes';
+      form.classList.add('edit-mode');
+      actionButtons.classList.add('show');
+      editBtn.style.display = 'none';
       isEditing = true;
-    } else {
-      form.submit();
-      editBtn.textContent = '✏️';
-      editBtn.title = 'Edit profile';
-      isEditing = false;
     }
   });
 
-  togglePassword.addEventListener('click', () => {
-    passwordSection.classList.toggle('active');
-    togglePassword.textContent = passwordSection.classList.contains('active')
-      ? 'Hide Password Section'
-      : 'Change Password';
+  // Discard button restores values
+  discardBtn.addEventListener('click', () => {
+    inputs.forEach(i => {
+      i.value = originalValues[i.name];
+      i.setAttribute('readonly', true);
+    });
+    form.classList.remove('edit-mode');
+    actionButtons.classList.remove('show');
+    editBtn.style.display = 'block';
+    isEditing = false;
+  });
+
+  // On submit, leave edit mode
+  form.addEventListener('submit', () => {
+    inputs.forEach(i => i.setAttribute('readonly', true));
+    form.classList.remove('edit-mode');
+    actionButtons.classList.remove('show');
+    editBtn.style.display = 'block';
+    isEditing = false;
   });
 
   // Notification handling
-  if (document.querySelector('.banner.err') || document.querySelector('.banner.ok')) {
-    const banners = document.querySelectorAll('.banner');
+  if (document.querySelector('.banner-profile.err') || document.querySelector('.banner-profile.ok')) {
+    const banners = document.querySelectorAll('.banner-profile');
     banners.forEach(banner => {
-        banner.classList.add('show'); // Show the banner
-        setTimeout(() => {
-            banner.classList.remove('show'); // Hide after 4 seconds
-        }, 4000);
+      banner.classList.add('show');
+      setTimeout(() => {
+        banner.classList.remove('show');
+      }, 4000);
     });
   }
 </script>
-
 </body>
-
 </html>
