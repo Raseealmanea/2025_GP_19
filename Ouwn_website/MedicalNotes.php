@@ -68,6 +68,20 @@
     <?php
         include "header.html";
     ?>
+    <!-- BREADCRUMB BAR -->
+    <nav class="ouwn-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
+    <div class="ouwn-crumbs">
+        <a class="crumb" href="dashboard.php">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+        </a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="crumb current" aria-current="page">
+        <i class="fa-solid fa-file-medical"></i>
+        <span>Add Medical Notes</span>
+        </span>
+    </div>
+    </nav>
     <main class="container">
 
         <?php if (!empty($errors)): ?>
@@ -96,10 +110,6 @@
 
             <div class="row actions">
                 <button type='submit'>Add Note</button>
-            </div>
-
-            <div class="return-link right">
-                <a href="dashboard.php"><i class="fa-solid fa-arrow-left"></i> Return to Dashboard</a>
             </div>
         </form>
     </main>
