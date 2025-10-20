@@ -106,11 +106,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Add Patient — Demo</title>
     <link rel="stylesheet" href="stylee.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body class="form-page medical-note">
     <?php
         include "header.html";
     ?>
+    <!-- BREADCRUMB BAR -->
+    <nav class="ouwn-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
+    <div class="ouwn-crumbs">
+        <a class="crumb" href="dashboard.php">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+        </a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="crumb current" aria-current="page">
+        <i class="fa-solid fa-user-plus"></i>
+        <span>Add Patient</span>
+        </span>
+    </div>
+    </nav>
+
     <main class="container">
         <h1>Add Patient</h1>
 <!--Alert if there is an error in the input or missing field -->
@@ -180,10 +196,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="row actions">
                 <button type="submit">Add Patient</button> 
             </div>
-
-            <div class="return-link right">
-                <a href="dashboard.php"><i class="fa-solid fa-arrow-left"></i> Return to Dashboard</a>
-            </div>
         </form>
     </main>
     <footer>
@@ -191,4 +203,3 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </footer>
 </body>
 </html>
-
