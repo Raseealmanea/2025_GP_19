@@ -126,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
 <head>
   <meta charset="UTF-8" />
   <title>Profile • OuwN</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="stylee.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -139,7 +140,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
     <?php endif; ?>
 
     <?php include "header.html"; ?>
-
+      <!-- BREADCRUMB BAR -->
+    <nav class="ouwn-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
+    <div class="ouwn-crumbs">
+        <a class="crumb" href="dashboard.php">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+        </a>
+        <span class="sep" aria-hidden="true">/</span>
+        <span class="crumb current" aria-current="page">
+        <i class="fa-solid fa-user"></i>
+        <span>Profile</span>
+        </span>
+    </div>
+    </nav>
     <main class="auth-container-profile">
        <div class="profile-header">
          <img src="profile.png" alt="Profile Image">
@@ -161,11 +175,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
             <div class="action-buttons-profile" id="actionButtons">
                 <button type="button" class="btn-profile discard" id="discardBtn">Discard Changes</button>
                 <button type="submit" class="btn-profile save">Save Changes</button>
-            </div>
-            
-             <!-- Return to dashboard button -->
-            <div class="return-link right">
-              <a href="dashboard.php"><i class="fa-solid fa-arrow-left"></i> Return to Dashboard</a>
             </div>
         </form>
     </main>
