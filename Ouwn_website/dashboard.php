@@ -35,7 +35,13 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
 </head>
 <body>
     <?php include "header.html"; ?>
-
+        <!-- BREADCRUMB BAR -->
+    <nav class="ouwn-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
+    <div class="ouwn-crumbs">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+    </div>
+    </nav>
     <main class="dashboard container">
         <h1>Welcome, Dr. <?= htmlspecialchars($userName) ?></h1>
 <!--Alert if Pattient is added or Note is added for patien -->
