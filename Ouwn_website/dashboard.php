@@ -43,6 +43,25 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
         </a>
     </div>
     </nav>
+
+     <!--Alert if Pattient is added or Note is added for patien -->
+        <?php if (isset($_GET['msg'])): ?>
+            <?php
+                // Determine the message based on URL parameter
+                $msgText = '';
+                switch ($_GET['msg']) {
+                    case 'patient_added':
+                    case 'added': // keep backward compatibility
+                        $msgText = 'Patient added successfully!';
+                        break;
+                    case 'note_added':
+                        $msgText = 'Medical note added successfully!';
+                        break;
+                    default:
+                        $msgText = '';
+                }
+            ?>
+    
     <main class="main-content">
         <div class="container">
             <!-- Decorative Title Bar -->
@@ -90,3 +109,4 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
     </footer>
 </body>
 </html>
+
