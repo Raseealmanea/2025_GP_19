@@ -6,7 +6,6 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
-//connection
 $DB_HOST = 'localhost';
 $DB_USER = 'root';
 $DB_PASS = 'root';
@@ -29,86 +28,56 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doctor Dashboard</title>
+    <title>Patient Dashboard - Medical Coding Portal</title>
     <link rel="stylesheet" href="stylee.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-    <?php include "header.html"; ?>
-        <!-- BREADCRUMB BAR -->
-    <nav class="ouwn-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
-    <div class="ouwn-crumbs">
-        <i class="fa-solid fa-house"></i>
-        <span>Dashboard</span>
-    </div>
-    </nav>
-    <main class="dashboard container">
-        <h1>Welcome, Dr. <?= htmlspecialchars($userName) ?></h1>
-<!--Alert if Pattient is added or Note is added for patien -->
-        <?php if (isset($_GET['msg'])): ?>
-            <?php
-                // Determine the message based on URL parameter
-                $msgText = '';
-                switch ($_GET['msg']) {
-                    case 'patient_added':
-                    case 'added': // keep backward compatibility
-                        $msgText = 'Patient added successfully!';
-                        break;
-                    case 'note_added':
-                        $msgText = 'Medical note added successfully!';
-                        break;
-                    default:
-                        $msgText = '';
-                }
-            ?>
+    <?php include "header.php"; ?>
 
-            <?php if ($msgText): ?>
-                <div id="toast" class="toast show">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <span><?= htmlspecialchars($msgText) ?></span>
-                </div>
-                <script>
-                    // Fade out after 3.5 seconds
-                    setTimeout(() => {
-                        const toast = document.getElementById('toast');
-                        if (toast) toast.classList.remove('show');
-                    }, 3500);
-
-                    // Remove ?msg=... from the URL
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                </script>
-            <?php endif; ?>
-        <?php endif; ?>
-        
-        <div class="dashboard-actions">
-            <button class="add-btn" onclick="location.href='AddPatient.php'"><i class="fa-solid fa-user-plus"></i> Add Patient</button>
-        </div>
-
-        <h2>Your Patients</h2>
-
-        <?php if (count($patients) > 0): ?>
-            <div class="patients-container">
-                <?php foreach ($patients as $p): ?>
-                    <div class="patient-card">
-                        <h3><?= htmlspecialchars($p['FullName']) ?></h3>
-                        <div class="patient-info">
-                            <strong>ID:</strong> <?= htmlspecialchars($p['ID']) ?><br>
-                        </div>
-                        <!-- Add Medical Notes Button -->
-                        <button 
-                            class="add-btn" 
-                            onclick="location.href='MedicalNotes.php?patient_id=<?= urlencode($p['ID']) ?>'">
-                            <i class="fa-solid fa-file-medical"></i> Add Medical Notes
-                        </button>
-                    </div>
-                <?php endforeach; ?>
+    <main class="main-content">
+        <div class="container">
+            <!-- Decorative Title Bar -->
+            <div class="title-bar">
+                <div class="title-bar-line"></div>
+                <h2 class="section-title">Patient List</h2>
+                <div class="title-bar-line-fade"></div>
             </div>
-        <?php else: ?>
-            <p>No patients found.</p>
-        <?php endif; ?>
+
+            <!-- Add Patient Button -->
+            <div class="header-buttons">
+                <button class="btn btn-primary" onclick="location.href='AddPatient.php'">
+                    <i class="fa-solid fa-user-plus"></i> Add Patient
+                </button>
+            </div>
+
+            <!-- Patient Grid -->
+            <?php if (count($patients) > 0): ?>
+                <div class="patient-grid">
+                    <?php foreach ($patients as $p): ?>
+                        <div class="patient-card">
+                            <div class="card-corner"></div>
+                            <div class="card-content">
+                                <h3 class="patient-name"><?= htmlspecialchars($p['FullName']) ?></h3>
+                                <div class="patient-id-row">
+                                    <span class="id-label">Patient ID</span>
+                                    <span class="patient-id"><?= htmlspecialchars($p['ID']) ?></span>
+                                </div>
+                                <!-- Add Medical Notes Button -->
+                                <button class="btn btn-secondary" onclick="location.href='MedicalNotes.php?patient_id=<?= urlencode($p['ID']) ?>'">
+                                    <i class="fa-solid fa-file-medical"></i> Add Medical Notes
+                                </button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p>No patients found.</p>
+            <?php endif; ?>
+        </div>
     </main>
+
     <footer>
-    <p>&copy; 2025 OuwN. All Rights Reserved.</p>
-  </footer>
+        <p>&copy; 2025 OuwN. All Rights Reserved.</p>
+    </footer>
 </body>
 </html>
