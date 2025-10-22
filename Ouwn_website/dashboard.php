@@ -32,7 +32,7 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="stylee.css">
 </head>
 <body>
-    <?php include "header.php"; ?>
+    <?php include "header.html"; ?>
 
     <main class="main-content">
         <div class="container">
