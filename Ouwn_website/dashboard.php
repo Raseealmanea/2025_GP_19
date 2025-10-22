@@ -51,7 +51,48 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
                 <h2 class="section-title">Patient List</h2>
                 <div class="title-bar-line-fade"></div>
             </div>
+<!--Alert if Pattient is added or Note is added for patien -->
+        <?php if (isset($_GET['msg'])): ?>
+            <?php
+                // Determine the message based on URL parameter
+                $msgText = '';
+                switch ($_GET['msg']) {
+                    case 'patient_added':
+                    case 'added': // keep backward compatibility
+                        $msgText = 'Patient added successfully!';
+                        break;
+                    case 'note_added':
+                        $msgText = 'Medical note added successfully!';
+                        break;
+                    default:
+                        $msgText = '';
+                }
+            ?>
 
+            <?php if ($msgText): ?>
+                <div id="toast" class="toast show">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span><?= htmlspecialchars($msgText) ?></span>
+                </div>
+                <script>
+                    // Fade out after 3.5 seconds
+                    setTimeout(() => {
+                        const toast = document.getElementById('toast');
+                        if (toast) toast.classList.remove('show');
+                    }, 3500);
+
+                    // Remove ?msg=... from the URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                </script>
+            <?php endif; ?>
+        <?php endif; ?>
+        
+            <!-- Add Patient Button -->
+            <div class="header-buttons">
+                <button class="btn btn-primary" onclick="location.href='AddPatient.php'">
+                    <i class="fa-solid fa-user-plus"></i> Add Patient
+                </button>
+            </div>
             <!-- Add Patient Button -->
             <div class="header-buttons">
                 <button class="btn btn-primary" onclick="location.href='AddPatient.php'">
@@ -90,3 +131,4 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
     </footer>
 </body>
 </html>
+
