@@ -830,7 +830,7 @@ body main.auth-container-profile {
 
 
 /* ===== dashboard ===== */
-.btn {
+.btn-primary .btn-secondary{
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -844,7 +844,7 @@ body main.auth-container-profile {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.btn:hover {
+.btn-primary .btn-secondary:hover {
   transform: scale(1.05);
   box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
 }
