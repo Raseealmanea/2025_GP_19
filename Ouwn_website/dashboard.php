@@ -34,6 +34,15 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
 <body>
     <?php include "header.html"; ?>
 
+    <!-- BREADCRUMB BAR -->
+     <nav class="ouwn-breadcrumb-bar" role="navigation" aria-label="Breadcrumb">
+    <div class="ouwn-crumbs">
+        <a class="crumb" href="dashboard.php">
+        <i class="fa-solid fa-house"></i>
+        <span>Dashboard</span>
+        </a>
+    </div>
+    </nav>
     <main class="main-content">
         <div class="container">
             <!-- Decorative Title Bar -->
