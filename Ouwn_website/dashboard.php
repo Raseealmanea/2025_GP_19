@@ -44,7 +44,7 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
     </div>
     </nav>
 
-     <!--Alert if Pattient is added or Note is added for patien -->
+   <!--Alert if Pattient is added or Note is added for patien -->
         <?php if (isset($_GET['msg'])): ?>
             <?php
                 // Determine the message based on URL parameter
@@ -61,6 +61,24 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
                         $msgText = '';
                 }
             ?>
+
+            <?php if ($msgText): ?>
+                <div id="toast" class="toast show">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span><?= htmlspecialchars($msgText) ?></span>
+                </div>
+                <script>
+                    // Fade out after 3.5 seconds
+                    setTimeout(() => {
+                        const toast = document.getElementById('toast');
+                        if (toast) toast.classList.remove('show');
+                    }, 3500);
+
+                    // Remove ?msg=... from the URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                </script>
+            <?php endif; ?>
+        <?php endif; ?>
     
     <main class="main-content">
         <div class="container">
@@ -109,4 +127,5 @@ $patients = $result->fetch_all(MYSQLI_ASSOC);
     </footer>
 </body>
 </html>
+
 
