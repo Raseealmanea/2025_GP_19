@@ -63,7 +63,7 @@
         $msg = '✅ Your email has been confirmed! You can now log in.';
 
     } catch (Throwable $e) {
-        // Catch any error (connection, decoding, SQL, etc.) and show a user-friendly message
+        // Catch any error and show a message
         $msg = '⚠️ ' . $e->getMessage();
     }
 ?>
@@ -87,3 +87,4 @@
         </main>
     </body>
 </html>
+
