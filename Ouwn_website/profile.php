@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
         $stmt->close();
 
         if ($row['cnt'] > 0) {
-            throw new RuntimeException('Invalid Email.');
+            throw new RuntimeException('Email Already Exists.');
         }
 
         // ---- Check if username already exists for another user ----
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
         $stmt->close();
 
         if ($row['cnt'] > 0) {
-            throw new RuntimeException('Invalid Username.');
+            throw new RuntimeException('Username Already Exists.');
         }
 
         // ---- Perform the update ----
@@ -240,3 +240,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
 </script>
 </body>
 </html>
+
