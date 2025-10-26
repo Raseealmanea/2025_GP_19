@@ -98,9 +98,11 @@
         <form id="noteForm" class="card"  method="POST" action="">
 
              <div class="row">
-                <label for="pid">Patient ID <span class="required">*</span></label>
+                <label for="pid">National ID / Iqama <span class="required">*</span></label>
                 <input name="pid" id="pid" type="text" 
-                    value="<?= htmlspecialchars($prefilledPid) ?>" readonly required />
+                    style="background-color: lightgray;" 
+                    value="<?= htmlspecialchars($prefilledPid) ?>" 
+                    readonly required />
             </div>
 
             <div class="row">
