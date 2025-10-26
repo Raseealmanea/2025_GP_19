@@ -622,23 +622,30 @@ body main.auth-container-profile {
 }
 
 .btn-profile {
-  background: #9975c2;
-  color: white;
-  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   border: none;
-  border-radius: 15px;
+  border-radius: 0.75rem;
   cursor: pointer;
-  font-size: 15px;
-  transition: background 0.2s;
+  transition: 0.3s;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
 .btn-profile:hover {
   background: #7a5e9b;
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
 }
 
 .btn-profile.discard {
   background: #ccc;
   color: #333;
+  transform: scale(1.05);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2);
 }
 
 .btn-profile.discard:hover {
@@ -1033,3 +1040,4 @@ body main.auth-container-profile {
     font-size: 1.75rem;
   }
 }
+
