@@ -39,13 +39,8 @@ try {
             throw new RuntimeException('Some information entered is invalid. Please review and try again.');
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)||!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $pass) ){
             throw new RuntimeException('Some information entered is invalid. Please review and try again.');
-        }
-
-        // Password strength
-        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $pass)) {
-            throw new RuntimeException('Password must be at least 8 characters, include uppercase, lowercase, a number, and a special character.');
         }
 
         // ---- Duplicate check ----
@@ -113,13 +108,9 @@ try {
         }
     }
 } catch (Throwable $e) {
-    // Preserve specific password error; make others ambiguous
-    if (strpos($e->getMessage(), 'Password must be') !== false) {
-        $errorMsg = $e->getMessage();
-    } else {
-        error_log("Signup error: " . $e->getMessage());
-        $errorMsg = 'Something went wrong. Please review your information and try again.';
-    }
+    // Always show the same ambiguous message to the user; log details for you
+    error_log("Signup error: " . $e->getMessage());
+    $errorMsg = 'Something went wrong. Please review your information and try again.';
 }
 ?>
 <!DOCTYPE html>
@@ -174,19 +165,15 @@ try {
     <p class="auth-subtitle">Join OuwN and save time for what matters.</p>
 
     <form method="POST" action="signup.php" class="auth-form">
-      <div class="grid-2">
-        <div>
+      
           <label for="first_name">First name</label>
           <input id="first_name" name="first_name" type="text" placeholder="e.g., Sara" required
             value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>">
-        </div>
-
-        <div>
+       
           <label for="last_name">Last name</label>
           <input id="last_name" name="last_name" type="text" placeholder="e.g., Al-Harbi" required
             value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>">
-        </div>
-      </div>
+       
 
       <label for="username">Username</label>
       <input id="username" name="username" type="text" placeholder="Choose a username" required
