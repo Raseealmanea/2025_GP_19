@@ -27,7 +27,6 @@ try {
     $mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $port);
     $mysqli->set_charset('utf8mb4');
 
-    // Handle form submission
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $first  = trim($_POST['first_name'] ?? '');
         $last   = trim($_POST['last_name'] ?? '');
@@ -35,7 +34,7 @@ try {
         $email  = trim($_POST['email'] ?? '');
         $pass   = $_POST['password'] ?? '';
 
-        // ---- Basic validation ----
+        // ---- Validation ----
         if ($first === '' || $last === '' || $userID === '' || $email === '' || $pass === '') {
             throw new RuntimeException('Some information entered is invalid. Please review and try again.');
         }
@@ -44,27 +43,26 @@ try {
             throw new RuntimeException('Some information entered is invalid. Please review and try again.');
         }
 
-        // Password strength (clear error message)
+        // Password strength
         if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $pass)) {
             throw new RuntimeException('Password must be at least 8 characters, include uppercase, lowercase, a number, and a special character.');
         }
 
-        // ---- Check for duplicates (ambiguous) ----
+        // ---- Duplicate check ----
         $check = $mysqli->prepare("SELECT 1 FROM $TABLE WHERE Email = ? OR UserID = ? LIMIT 1");
         $check->bind_param('ss', $email, $userID);
         $check->execute();
         $check->store_result();
-
         if ($check->num_rows > 0) {
             throw new RuntimeException('Unable to create account. Please try again or use different credentials.');
         }
         $check->close();
 
-        // ---- Prepare user data ----
+        // ---- Prepare data ----
         $fullName = $first . ' ' . $last;
         $passHash = password_hash($pass, PASSWORD_DEFAULT);
 
-        // ---- Encode for confirmation email ----
+        // Encode user data for email confirmation
         $userdata = [
             'username' => $userID,
             'email'    => $email,
@@ -75,13 +73,12 @@ try {
 
         // ---- Send confirmation email ----
         $mail = new PHPMailer(true);
-
         try {
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'ouwnsystem@gmail.com'; // Gmail account
-            $mail->Password   = 'hekwyotvhhijigbo';     // Gmail app password
+            $mail->Username   = 'ouwnsystem@gmail.com';
+            $mail->Password   = 'hekwyotvhhijigbo';
             $mail->SMTPSecure = 'tls';
             $mail->Port       = 587;
 
@@ -94,15 +91,13 @@ try {
             $mail->Subject = 'Confirm Your Email';
             $mail->Body = "
             <html>
-              <body style=\"font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #2d004d; background: #f4eefc; padding: 20px;\">
-                <div style=\"max-width: 600px; margin: auto; background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);\">
-                  <h2 style=\"color: #9975C1; text-align: center;\">OuwN Email Confirmation</h2>
+              <body style=\"font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#2d004d;background:#f4eefc;padding:20px;\">
+                <div style=\"max-width:600px;margin:auto;background:#fff;border-radius:10px;padding:30px;box-shadow:0 5px 15px rgba(0,0,0,0.1);\">
+                  <h2 style=\"color:#9975C1;text-align:center;\">OuwN Email Confirmation</h2>
                   <p>Hi " . htmlspecialchars($fullName) . ",</p>
                   <p>Welcome! Please confirm your email address by clicking the button below:</p>
-                  <div style=\"text-align: center; margin: 30px 0;\">
-                    <a href=\"$confirmLink\" style=\"background: #9975C1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 25px; font-weight: bold;\">
-                      Confirm Email
-                    </a>
+                  <div style=\"text-align:center;margin:30px 0;\">
+                    <a href=\"$confirmLink\" style=\"background:#9975C1;color:white;padding:12px 25px;text-decoration:none;border-radius:25px;font-weight:bold;\">Confirm Email</a>
                   </div>
                   <p>If you didn't create an account, you can ignore this email.</p>
                   <p>Thanks,<br><strong>OuwN Team</strong></p>
@@ -118,7 +113,7 @@ try {
         }
     }
 } catch (Throwable $e) {
-    // Preserve specific password error, make others ambiguous
+    // Preserve specific password error; make others ambiguous
     if (strpos($e->getMessage(), 'Password must be') !== false) {
         $errorMsg = $e->getMessage();
     } else {
@@ -127,7 +122,6 @@ try {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -135,7 +129,6 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign Up • OuwN</title>
   <link rel="stylesheet" href="stylee.css">
-
   <style>
     .banner {
       display: none;
@@ -145,7 +138,6 @@ try {
       max-width: 540px;
       text-align: center;
     }
-
     .banner.show { display: block; }
     .banner.err  { background: #f44336; color: #fff; }
     .banner.ok   { background: #2e7d32; color: #fff; }
@@ -176,12 +168,12 @@ try {
     </div>
   </header>
 
-  <!-- Main signup form -->
+  <!-- Signup form -->
   <main class="auth-container">
     <h2 class="auth-title">Create your account</h2>
     <p class="auth-subtitle">Join OuwN and save time for what matters.</p>
 
-    <form method="POST" action="signup.php" class="auth-form" onsubmit="return validatePassword()">
+    <form method="POST" action="signup.php" class="auth-form">
       <div class="grid-2">
         <div>
           <label for="first_name">First name</label>
@@ -216,23 +208,8 @@ try {
     </p>
   </main>
 
-  <!-- Footer -->
   <footer>
     <p>&copy; 2025 OuwN. All Rights Reserved.</p>
   </footer>
-
-  <!-- Client-side validation script -->
-  <script>
-    function validatePassword() {
-      const pw = document.getElementById('password').value;
-      const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-      if (!regex.test(pw)) {
-        alert('Password must be at least 8 characters, include uppercase, lowercase, a number, and a special character.');
-        return false;
-      }
-      return true;
-    }
-  </script>
-
 </body>
 </html>
