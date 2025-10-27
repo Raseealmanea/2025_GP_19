@@ -68,7 +68,7 @@ try {
     }
 } catch (Throwable $e) {
     error_log("Login error: " . $e->getMessage());
-    $errorMsg = 'Please check your information and try again.';
+    $errorMsg = 'Username or Password is invalid.';
 }
 ?>
 <!DOCTYPE html>
