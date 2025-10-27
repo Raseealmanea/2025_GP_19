@@ -117,30 +117,45 @@ try {
         ];
         $encoded = base64_encode(json_encode($userdata));
 
-        $mail = new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'ouwnsystem@gmail.com';
-        $mail->Password   = 'hekwyotvhhijigbo';
-        $mail->SMTPSecure = 'tls';
-        $mail->Port       = 587;
+       $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = 'smtp.gmail.com';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = 'ouwnsystem@gmail.com';
+            $mail->Password   = 'hekwyotvhhijigbo';
+            $mail->SMTPSecure = 'tls';
+            $mail->Port       = 587;
 
-        $mail->setFrom('ouwnsystem@gmail.com', 'OuwN System');
-        $mail->addAddress($email, "$first $last");
+            $mail->setFrom('ouwnsystem@gmail.com', 'OuwN System');
+            $mail->addAddress($email, $fullName);
 
-        $confirmLink = "http://localhost:8888/ouwn/confirm_email.php?data=$encoded";
-        $mail->isHTML(true);
-        $mail->Subject = 'Confirm Your Email';
-        $mail->Body = "
-        <html><body style='font-family:sans-serif'>
-        <p>Hi ".htmlspecialchars("$first $last").",</p>
-        <p>Please confirm your email by clicking below:</p>
-        <p><a href='$confirmLink'>Confirm Email</a></p>
-        </body></html>";
-        $mail->send();
+            $confirmLink = "http://localhost:8888/ouwn/confirm_email.php?data=$encoded";
 
-        $successMsg = '✅ Account created! Please check your email to confirm your account.';
+            $mail->isHTML(true);
+            $mail->Subject = 'Confirm Your Email';
+            $mail->Body = "
+            <html>
+              <body style=\"font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#2d004d;background:#f4eefc;padding:20px;\">
+                <div style=\"max-width:600px;margin:auto;background:#fff;border-radius:10px;padding:30px;box-shadow:0 5px 15px rgba(0,0,0,0.1);\">
+                  <h2 style=\"color:#9975C1;text-align:center;\">OuwN Email Confirmation</h2>
+                  <p>Hi " . htmlspecialchars($fullName) . ",</p>
+                  <p>Welcome! Please confirm your email address by clicking the button below:</p>
+                  <div style=\"text-align:center;margin:30px 0;\">
+                    <a href=\"$confirmLink\" style=\"background:#9975C1;color:white;padding:12px 25px;text-decoration:none;border-radius:25px;font-weight:bold;\">Confirm Email</a>
+                  </div>
+                  <p>If you didn't create an account, you can ignore this email.</p>
+                  <p>Thanks,<br><strong>OuwN Team</strong></p>
+                </div>
+              </body>
+            </html>";
+
+            $mail->send();
+            $successMsg = '✅ Account created! Please check your email to confirm your account.';
+        } catch (Exception $e) {
+            error_log("Mailer error for $email: " . $mail->ErrorInfo);
+            throw new RuntimeException('Account creation failed. Please try again later.');
+        }
     }
 } catch (Throwable $e) {
     error_log($e->getMessage());
@@ -284,3 +299,4 @@ emailEl.addEventListener('input',runEmailCheck);
 </script>
 </body>
 </html>
+
