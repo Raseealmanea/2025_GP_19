@@ -1,5 +1,5 @@
 <?php
-// login.php — single file: handles POST first, then renders the form
+// login.php — handles POST first, then renders the form
 declare(strict_types=1);
 
 ini_set('display_errors', '1');
@@ -13,25 +13,28 @@ $DB_HOST = "127.0.0.1";
 $DB_USER = 'root';
 $DB_PASS = 'root';
 $DB_NAME = 'OuwnDB';
-$port = 8889;
-$TABLE = 'HealthCareP';   
+$TABLE   = 'HealthCareP';
+$port    = 8889;
 
 $successMsg = '';
 $errorMsg   = '';
 
 try {
-    $mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME,$port );
+    $mysqli = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME, $port);
     $mysqli->set_charset('utf8mb4');
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
 
+        // Keep user input values
+        $enteredUsername = htmlspecialchars($username, ENT_QUOTES);
+
         if ($username === '' || $password === '') {
-            throw new RuntimeException('Both username and password are required.');
+            throw new RuntimeException('Please check your information and try again.');
         }
 
-        // Fetch user by UserID
+        // Fetch user
         $stmt = $mysqli->prepare("SELECT UserID, Password, Name, Email FROM $TABLE WHERE UserID = ? LIMIT 1");
         $stmt->bind_param('s', $username);
         $stmt->execute();
@@ -39,17 +42,12 @@ try {
         $user   = $result->fetch_assoc();
         $stmt->close();
 
-        if (!$user) {
-            // Username not found
-            throw new RuntimeException('Username does not exist.');
+        // Generic error message — hides details (ambiguous)
+        if (!$user || !password_verify($password, $user['Password'])) {
+            throw new RuntimeException('Please check your information and try again.');
         }
 
-        // Verify hashed password
-        if (!password_verify($password, $user['Password'])) {
-            throw new RuntimeException('Incorrect password.');
-        }
-
-        // (Optional) Rehash if algorithm updated
+        // Optional: Rehash password if outdated
         if (password_needs_rehash($user['Password'], PASSWORD_DEFAULT)) {
             $newHash = password_hash($password, PASSWORD_DEFAULT);
             $upd = $mysqli->prepare("UPDATE $TABLE SET Password = ? WHERE UserID = ?");
@@ -58,17 +56,19 @@ try {
             $upd->close();
         }
 
-        // Success: establish session
+        // Success: start session
         $_SESSION['user_id']   = $user['UserID'];
         $_SESSION['user_name'] = $user['Name'] ?? $user['UserID'];
         $_SESSION['user_email']= $user['Email'] ?? '';
 
-        $successMsg = '✅ Logged in successfully. Welcome back!';
         header('Location: dashboard.php');
-       
+        exit;
+    } else {
+        $enteredUsername = '';
     }
 } catch (Throwable $e) {
-    $errorMsg = $e->getMessage();
+    error_log("Login error: " . $e->getMessage());
+    $errorMsg = 'Please check your information and try again.';
 }
 ?>
 <!DOCTYPE html>
@@ -100,27 +100,25 @@ try {
     <div class="banner ok show"><?= htmlspecialchars($successMsg) ?></div>
   <?php endif; ?>
 
-   <header class="header">
-            <div class="header-left">
-                <img src='logo.svg' alt="OuwN Logo" class="logo-img">
-            </div>
-            
-                <nav class="header-nav">
-                    <a href="homePage.php#about">About</a>
-                    <a href="homePage.php#vision">Vision</a>
-                </nav>
-            </div>
-        </header>
-
+  <header class="header">
+    <div class="header-left">
+      <img src="logo.svg" alt="OuwN Logo" class="logo-img">
+    </div>
+    <nav class="header-nav">
+      <a href="homePage.php#about">About</a>
+      <a href="homePage.php#vision">Vision</a>
+    </nav>
+  </header>
 
   <main class="auth-container">
     <h2 class="auth-title">Welcome back</h2>
     <p class="auth-subtitle">Sign in to continue caring for your patients.</p>
 
     <!-- Post back to this same file -->
-    <form method="POST" action="login.php" class="auth-form">
+    <form method="POST" action="login.php" class="auth-form" autocomplete="off">
       <label for="username">Username</label>
-      <input id="username" name="username" type="text" placeholder="Enter your username" required>
+      <input id="username" name="username" type="text" placeholder="Enter your username"
+             required value="<?= $enteredUsername ?>">
 
       <label for="password">Password</label>
       <input id="password" name="password" type="password" placeholder="Enter your password" required>
