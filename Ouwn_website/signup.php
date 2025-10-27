@@ -39,8 +39,13 @@ try {
             throw new RuntimeException('Some information entered is invalid. Please review and try again.');
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)||!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $pass) ){
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new RuntimeException('Some information entered is invalid. Please review and try again.');
+        }
+
+        // Password strength
+        if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $pass)) {
+            throw new RuntimeException('Password must be at least 8 characters, include uppercase, lowercase, a number, and a special character.');
         }
 
         // ---- Duplicate check ----
@@ -108,9 +113,13 @@ try {
         }
     }
 } catch (Throwable $e) {
-    // Always show the same ambiguous message to the user; log details for you
-    error_log("Signup error: " . $e->getMessage());
-    $errorMsg = 'Something went wrong. Please review your information and try again.';
+    // Preserve specific password error; make others ambiguous
+    if (strpos($e->getMessage(), 'Password must be') !== false) {
+        $errorMsg = $e->getMessage();
+    } else {
+        error_log("Signup error: " . $e->getMessage());
+        $errorMsg = 'Something went wrong. Please review your information and try again.';
+    }
 }
 ?>
 <!DOCTYPE html>
