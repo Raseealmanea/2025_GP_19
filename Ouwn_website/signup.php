@@ -35,39 +35,36 @@ try {
         $email  = trim($_POST['email'] ?? '');
         $pass   = $_POST['password'] ?? '';
 
-        // Validate required fields
+        // ---- Basic validation ----
         if ($first === '' || $last === '' || $userID === '' || $email === '' || $pass === '') {
-            throw new RuntimeException('All fields are required.');
+            throw new RuntimeException('Some information entered is invalid. Please review and try again.');
         }
 
-        // Validate email format
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new RuntimeException('Invalid email address.');
+            throw new RuntimeException('Some information entered is invalid. Please review and try again.');
         }
 
-        // Validate password strength
+        // Password strength (clear error message)
         if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/', $pass)) {
-            throw new RuntimeException(
-                'Password must be at least 8 characters, include uppercase, lowercase, a number, and a special character.'
-            );
+            throw new RuntimeException('Password must be at least 8 characters, include uppercase, lowercase, a number, and a special character.');
         }
 
-        // Check for duplicates
+        // ---- Check for duplicates (ambiguous) ----
         $check = $mysqli->prepare("SELECT 1 FROM $TABLE WHERE Email = ? OR UserID = ? LIMIT 1");
         $check->bind_param('ss', $email, $userID);
         $check->execute();
         $check->store_result();
 
         if ($check->num_rows > 0) {
-            throw new RuntimeException('Email or Username already exists.');
+            throw new RuntimeException('Unable to create account. Please try again or use different credentials.');
         }
         $check->close();
 
-        // Prepare user data
+        // ---- Prepare user data ----
         $fullName = $first . ' ' . $last;
         $passHash = password_hash($pass, PASSWORD_DEFAULT);
 
-        // Encode user data for email confirmation
+        // ---- Encode for confirmation email ----
         $userdata = [
             'username' => $userID,
             'email'    => $email,
@@ -76,27 +73,23 @@ try {
         ];
         $encoded = base64_encode(json_encode($userdata));
 
-        // Send confirmation email
+        // ---- Send confirmation email ----
         $mail = new PHPMailer(true);
 
         try {
-            // Configure SMTP
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'ouwnsystem@gmail.com'; // Your Gmail
-            $mail->Password   = 'hekwyotvhhijigbo';     // App password
+            $mail->Username   = 'ouwnsystem@gmail.com'; // Gmail account
+            $mail->Password   = 'hekwyotvhhijigbo';     // Gmail app password
             $mail->SMTPSecure = 'tls';
             $mail->Port       = 587;
 
-            // Sender and recipient
             $mail->setFrom('ouwnsystem@gmail.com', 'OuwN System');
             $mail->addAddress($email, $fullName);
 
-            // Confirmation link
             $confirmLink = "http://localhost:8888/ouwn/confirm_email.php?data=$encoded";
 
-            // Email content
             $mail->isHTML(true);
             $mail->Subject = 'Confirm Your Email';
             $mail->Body = "
@@ -117,15 +110,21 @@ try {
               </body>
             </html>";
 
-            // Send the email
             $mail->send();
             $successMsg = '✅ Account created! Please check your email to confirm your account.';
         } catch (Exception $e) {
-            $errorMsg = "Mailer Error: " . $mail->ErrorInfo;
+            error_log("Mailer error for $email: " . $mail->ErrorInfo);
+            throw new RuntimeException('Account creation failed. Please try again later.');
         }
     }
 } catch (Throwable $e) {
-    $errorMsg = $e->getMessage();
+    // Preserve specific password error, make others ambiguous
+    if (strpos($e->getMessage(), 'Password must be') !== false) {
+        $errorMsg = $e->getMessage();
+    } else {
+        error_log("Signup error: " . $e->getMessage());
+        $errorMsg = 'Something went wrong. Please review your information and try again.';
+    }
 }
 ?>
 
@@ -186,20 +185,24 @@ try {
       <div class="grid-2">
         <div>
           <label for="first_name">First name</label>
-          <input id="first_name" name="first_name" type="text" placeholder="e.g., Sara" required>
+          <input id="first_name" name="first_name" type="text" placeholder="e.g., Sara" required
+            value="<?= htmlspecialchars($_POST['first_name'] ?? '') ?>">
         </div>
 
         <div>
           <label for="last_name">Last name</label>
-          <input id="last_name" name="last_name" type="text" placeholder="e.g., Al-Harbi" required>
+          <input id="last_name" name="last_name" type="text" placeholder="e.g., Al-Harbi" required
+            value="<?= htmlspecialchars($_POST['last_name'] ?? '') ?>">
         </div>
       </div>
 
       <label for="username">Username</label>
-      <input id="username" name="username" type="text" placeholder="Choose a username" required>
+      <input id="username" name="username" type="text" placeholder="Choose a username" required
+        value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
 
       <label for="email">Email</label>
-      <input id="email" name="email" type="email" placeholder="you@example.com" required>
+      <input id="email" name="email" type="email" placeholder="you@example.com" required
+        value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
 
       <label for="password">Password</label>
       <input id="password" name="password" type="password" placeholder="Create a password" required>
@@ -220,18 +223,11 @@ try {
 
   <!-- Client-side validation script -->
   <script>
-    function showClientBanner(type, message) {
-      const el = document.querySelector('.banner#clientBanner');
-      if (!el) return;
-      el.textContent = message;
-      el.className = 'banner show ' + (type === 'ok' ? 'ok' : 'err');
-    }
-
     function validatePassword() {
       const pw = document.getElementById('password').value;
       const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
       if (!regex.test(pw)) {
-        alert('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+        alert('Password must be at least 8 characters, include uppercase, lowercase, a number, and a special character.');
         return false;
       }
       return true;
