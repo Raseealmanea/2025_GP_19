@@ -48,18 +48,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // DOB: not future, age ≤ 130
   if ($dob) {
     $dobTs = strtotime($dob);
-    if ($dobTs === false) {
-      $errors[] = "Invalid date format for Date of Birth.";
-    } else {
-      if ($dobTs > time()) {
+
+    if ($dobTs > time()) {
         $errors[] = "Date of Birth cannot be in the future.";
-      } else {
+    } else {
         $age = (int)date('Y') - (int)date('Y', $dobTs);
         if (date('md', $dobTs) > date('md')) $age--;
         if ($age > 130) $errors[] = "Age cannot exceed 130 years.";
-      }
     }
-  }
+}
+
 
   // Duplicate ID
   if (empty($errors) && $id) {
@@ -237,20 +235,19 @@ input, select, textarea, button {
       </div>
     </div>
 
-    <div class="row" style="grid-template-columns: 1fr;">
-      <div></div>
-      <div class="control"><button type="submit" class="primary">Add Patient</button></div>
-    </div>
+     <div class="row actions">
+            <button type='submit'>Add Note</button>
+      </div>
   </form>
 </main>
 
 <script>
-// Helper to set UI
+// Helper to set UI (no success text)
 function setValidity(input, ok, msg){
   const fb = input.closest('.control').querySelector('.feedback');
   input.classList.toggle('is-valid', ok);
   input.classList.toggle('is-invalid', !ok);
-  fb.textContent = msg || "";
+  fb.textContent = ok ? "" : msg || "";
   fb.classList.toggle('valid', ok);
 }
 
@@ -270,7 +267,7 @@ function checkDob() {
   const mdDob = (d.getMonth()+1)*100 + d.getDate();
   if (mdDob > mdNow) age--;
   if (age > 130) { setValidity(dob, false, "Age cannot exceed 130 years."); return; }
-  setValidity(dob, true, "DOB looks good.");
+  setValidity(dob, true); // ✅ no "looks good" message
 }
 dob.addEventListener('input', checkDob);
 dob.addEventListener('change', checkDob);
@@ -285,8 +282,8 @@ idInput.addEventListener('input', ()=>{
   idTimer = setTimeout(()=>{
     fetch(`<?= basename(__FILE__) ?>?check=id&v=${encodeURIComponent(v)}`)
       .then(r=>r.json())
-      .then(d=> setValidity(idInput, !d.exists, d.exists ? "This ID already exists." : "ID looks good.") )
-      .catch(()=> setValidity(idInput, true, "ID looks good.") );
+      .then(d=> setValidity(idInput, !d.exists, d.exists ? "This ID already exists." : "") )
+      .catch(()=> setValidity(idInput, true));
   }, 250);
 });
 
@@ -294,17 +291,16 @@ idInput.addEventListener('input', ()=>{
 const phone = document.getElementById('phone');
 phone.addEventListener('input', ()=>{
   const ok = /^05\d{8}$/.test(phone.value.trim());
-  setValidity(phone, ok, ok ? "Phone looks good." : "Must start with 05 and be 10 digits.");
+  setValidity(phone, ok, "Must start with 05 and be 10 digits.");
 });
 
 // Email: simple pattern
 const email = document.getElementById('email');
 email.addEventListener('input', ()=>{
   const ok = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i.test(email.value.trim());
-  setValidity(email, ok, ok ? "Email looks good." : "Invalid email format.");
+  setValidity(email, ok, "Invalid email format.");
 });
 
-/* No live validation for: full_name, gender, address, blood_type */
 </script>
 </body>
 </html>
