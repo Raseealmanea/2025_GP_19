@@ -33,23 +33,54 @@ a:hover {
 
 /* Full-width header */
 header.header {
-    width: 100vw;                     /* full viewport */
-    max-width: 100%;                   /* don't overflow */
-    padding-inline: clamp(16px, 6vw, 80px); 
-    padding-block: 15px;
-    box-sizing: border-box;            /* ensures padding stays inside width */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    margin: 0;
+  width: 100%;
+  max-width: 100%;
+  padding-inline: clamp(16px, 6vw, 80px);
+  padding-block: 15px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
+body.auth-page-body {
+  margin: 0;
+  padding: 0;
+}
 
+header.header {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 20px 60px;  /* adjust side spacing */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-left img {
+  height: 50px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 30px;
+}
+
+.header-nav a {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
 
 /* Keep nav links aligned with page content */
 .header-nav {
