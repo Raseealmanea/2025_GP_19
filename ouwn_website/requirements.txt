@@ -1,0 +1,8 @@
+Flask
+flask-mail
+firebase-admin
+gunicorn
+python-dotenv
+requests
+itsdangerous
+Werkzeug
