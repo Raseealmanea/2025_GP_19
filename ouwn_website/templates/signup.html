@@ -31,13 +31,15 @@
 
 
 <header class="header">
-  <div class="header-left">
-    <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo" class="logo-img">
-  </div>
-  <nav class="header-nav">
-    <a href="{{ url_for('home') }}#about">About</a>
-    <a href="{{ url_for('home') }}#vision">Vision</a>
-  </nav>
+    <div class="header-left">
+        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo" class="logo-img">
+    </div>
+    <div class="header-right">
+        <nav class="header-nav">
+            <a href="#about">About</a>
+            <a href="#vision">Vision</a>
+        </nav>
+    </div>
 </header>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -227,4 +229,5 @@ emailEl.addEventListener("input", debounce(async () => {
 
 </body>
 </html>
+
 
