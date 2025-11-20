@@ -111,14 +111,14 @@
 </footer>
 
 <script>
-  // ---------- State ----------
+  // State
   let selectedCodes = {{ selected_icd_codes | default([]) | tojson | safe }};
   let currentCategory = "";
   let currentICDResults = [];   // full result list for current view
   let renderIndex = 0;          // how many items already rendered
   const PAGE_SIZE = 40;         // how many codes to render per batch
 
-  // ---------- Helpers ----------
+  // Helpers 
   function showMessage(msg, type = "success", duration = 3000) {
     const banner = document.getElementById("saveMessage");
     banner.textContent = msg;
@@ -152,7 +152,7 @@
 
   window.removeCode = removeCode; // so onclick in HTML string works
 
-  // ---------- Load Categories ----------
+  // Load Categories 
   function initCategories() {
     fetch("/icd_categories")
       .then((res) => res.json())
@@ -180,7 +180,7 @@
       });
   }
 
-  // ---------- Load ICD by Category ----------
+  //  Load ICD by Category
   function loadByCategory(category) {
     fetch(`/icd_by_category/${encodeURIComponent(category)}`)
       .then((res) => res.json())
@@ -192,7 +192,7 @@
       });
   }
 
-  // ---------- Search ----------
+  // Search 
   function searchICD() {
     const term = document.getElementById("searchBox").value.trim();
     if (!term) return;
@@ -213,7 +213,7 @@
 
   window.searchICD = searchICD; // used by the Search button onclick
 
-  // ---------- Infinite Scroll Rendering ----------
+  // Infinite Scroll Rendering
   function displayICDResults(data) {
     const resultsDiv = document.getElementById("results");
     resultsDiv.innerHTML = "";
@@ -272,7 +272,7 @@
     }
   }
 
-  // ---------- Select / Unselect Codes ----------
+  // Select and Unselect Codes 
   function initResultsListener() {
     document.getElementById("results").addEventListener("change", (e) => {
       if (!e.target.matches("input[type='checkbox']")) return;
@@ -292,7 +292,7 @@
     });
   }
 
-  // ---------- Save Note + ICD Codes ----------
+  // Save Note + ICD Codes
   function initSaveButton() {
     document
       .getElementById("saveBothBtn")
@@ -333,7 +333,7 @@
       });
   }
 
-  // ---------- Init on Load ----------
+  // Init on Load
   window.addEventListener("load", () => {
     updateSelectedCodesUI();
     initCategories();
