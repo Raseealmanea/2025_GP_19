@@ -4,6 +4,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #F4F1FB, #E1D4F2);
     color: #2d004d;
+    min-height: 100vh;          /* make body fill full height */
 }
 
 a {
@@ -47,51 +48,22 @@ header.header {
   top: 0;
   z-index: 100;
 }
-
-body.auth-page-body {
-  margin: 0;
-  padding: 0;
-}
-
-header.header {
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  padding: 20px 60px;  /* adjust side spacing */
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-.header-left img {
-  height: 50px;
-}
-
+/* home page */
 .header-nav {
   display: flex;
   gap: 30px;
+  margin-left: auto;
 }
 
 .header-nav a {
   text-decoration: none;
   color: #333;
   font-weight: 500;
-}
-
-/* Keep nav links aligned with page content */
-.header-nav {
-    margin-left: auto;
-}
-.header-nav a {
-    margin-left: 15px;
-    font-weight: 500;
-    color: #333;
-    font-size: 16px;
-    transition: color 0.3s;
+  margin-left: 15px;
+  font-weight: 500;
+  color: #333;
+  font-size: 16px;
+  transition: color 0.3s;
 }
 
 .header-left .logo-img {
@@ -163,55 +135,57 @@ footer {
     padding: 20px;
     background: rgba(255, 255, 255, 0.15);
     color: white;
-    margin-top: 50px;
+    margin-top: auto;
 }
-
+/* reset */
+/* RESET + TOKEN PAGE */
 .reset-page-body, .token-page-body {
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    margin: 0;
+    background: linear-gradient(135deg, #F4F1FB, #E1D4F2);
+    padding: 20px;
 }
 
+/* Bigger card */
 .reset-container, .token-container {
-    background: rgba(255,255,255,0.2);
-    padding: 40px;
+    background: rgba(255,255,255,0.25);
+    padding: 50px 40px;
     border-radius: 20px;
     text-align: center;
     box-shadow: 0 8px 25px rgba(0,0,0,0.1);
     width: 100%;
-    max-width: 400px;
+    max-width: 540px;   /* ← SAME SIZE AS LOGIN/SIGNUP */
 }
 
-.reset-container input, .token-container input {
+/* Input fields */
+.reset-container input,
+.token-container input {
     width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 8px;
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 10px;
     border: none;
+    background: white;
+    font-size: 16px;
 }
 
-.auth-page-body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #F4F1FB, #E1D4F2);
-    color: #2d004d;
-    min-height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-  }
+/* login */
+
 
   .auth-container {
-    max-width: 420px;
-    margin: 60px auto;
+    max-width: 540px;
+    width: 100%;
+    margin: 40px auto;        /* centered + only top/bottom 40px (consistent) */
     padding: 40px 32px;
     background: rgba(255, 255, 255, 0.20);
     backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.08);
     text-align: left;
-  }
+}
+
 
   .auth-title {
     margin: 0 0 6px 0;
@@ -288,25 +262,7 @@ footer {
       grid-template-columns: 1fr 1fr;
     }
   }
-  
-/* Center the form card inside the grid page */
-.auth-container {
-    justify-self: center;   /* <-- fixes the “hugging left edge” issue */
-    max-width: 540px;
-    width: 100%;
-    margin: 40px 0;         /* vertical spacing */
-    padding: 40px 32px;
-  }
-  
-  /* Comfortable left/right gutters across the page */
-  .auth-page-body { 
-    padding-inline: clamp(16px, 6vw, 80px);
-  }
-  
-  header, footer {
-    padding-inline: clamp(16px, 6vw, 80px);
-  }
-  
+
   /* (Good practice) Ensure padding doesn't blow widths */
   *, *::before, *::after { box-sizing: border-box; }
 
@@ -394,7 +350,7 @@ footer {
   width: 100%;             /* prevent shrink */
 }
 
-/* Keep your content width consistent */
+/* profile */
 .form-page .container {
   max-width: 900px;
   width: min(900px, 92%);  /* same feel on small screens */
@@ -471,11 +427,6 @@ footer {
     }
 
     /* === Keep footer at bottom & center dashboard content === */
-    body {
-      min-height: 100vh;          /* make body fill full height */
-      display: flex;
-      flex-direction: column;
-    }
     
     main.dashboard {
       flex: 1;                    /* let main take up leftover space */
@@ -485,10 +436,7 @@ footer {
       align-items: center;        /* horizontally center */
       text-align: center;
     }
-    
-    footer {
-      margin-top: auto;           /* pushes footer to bottom */
-    }
+  
 /* === Align fields on the Medical Note page only === */
 @media (min-width:700px){
   .form-page .row{
@@ -774,39 +722,6 @@ body main.auth-container-profile {
   }
 }
 
-
-  .profile-header img {
-    width: 80px;
-    height: 80px;
-  }
-
-  .profile-header h2 {
-    font-size: 18px;
-  }
-
-  .edit-btn-profile {
-    top: 5px;
-    right: 5px;
-    font-size: 18px;
-  }
-
-  .profile-info input {
-    font-size: 14px;
-    padding: 8px;
-  }
-
-  .btn-profile {
-    font-size: 14px;
-    padding: 8px 14px;
-  }
-
-  .banner-profile {
-    width: 90%;
-    font-size: 14px;
-    padding: 10px;
-  }
-
-
 /* ===== OuwN Breadcrumb Bar — Purple, Wide, Soft Shadow ===== */
 .ouwn-breadcrumb-bar {
  background: #a98cd8;                        /* purple background */
@@ -1091,13 +1006,7 @@ body main.auth-container-profile {
    FINAL MOBILE FIXES (LOGIN & SIGNUP)
 ---------------------------------------*/
 @media (max-width: 600px) {
-
-    /* Body padding so content doesn't touch edges */
-    .auth-page-body {
-        padding: 16px;
-        background-size: cover;
-        display: block; /* override grid */
-    }
+ 
 
     /* Fix header for phones */
    header.header {
@@ -1116,15 +1025,6 @@ body main.auth-container-profile {
         flex-direction: row !important;
         gap: 18px !important;
         margin-left: auto !important;  /* push nav to the right */
-    }
-
-    /* Login/Signup container */
-    .auth-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 20px auto;
-        padding: 24px 20px;
-        border-radius: 16px;
     }
 
     .auth-title {
@@ -1175,5 +1075,4 @@ body main.auth-container-profile {
 input:focus {
     outline: none !important;
 }
-
 
