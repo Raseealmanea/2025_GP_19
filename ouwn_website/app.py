@@ -118,7 +118,7 @@ def create_app():
             # save to Firestore if everything is good
             if not errors:
                 db.collection("Patients").document(pid).set({
-                    "UserID": pid,                     # PATIENT ID = National ID
+                    "ID": pid,                     # PATIENT ID = National ID
                     "FullName": name,
                     "DOB": dob,
                     "Gender": gender,
@@ -296,6 +296,20 @@ def create_app():
                 if not re.fullmatch(r"^[A-Za-z][A-Za-z0-9._-]{2,31}$", new_username):
                     flash("Username must start with a letter and be 3–32 characters.", "error")
                     return redirect(url_for("profile"))
+                
+                # Check if new email exists
+                email_query = db.collection("HealthCareP").where("Email", "==", new_email).stream()
+                for docx in email_query:
+                    if docx.id != old_id:  # email belongs to another user
+                        flash("Email already exists.", "error")
+                        return redirect(url_for("profile"))
+                    
+                # Check if new username exists
+                if new_username != old_id:
+                    new_ref = db.collection("HealthCareP").document(new_username)
+                    if new_ref.get().exists:
+                        flash("Username already taken.", "error")
+                        return redirect(url_for("profile"))    
 
                 # updating without username change 
                 if new_username == old_id:
@@ -308,11 +322,6 @@ def create_app():
 
                 # If username CHANGED , create new doc 
                 new_ref = db.collection("HealthCareP").document(new_username)
-
-                # Check if new username exists
-                if new_ref.get().exists:
-                    flash("Username already taken.", "error")
-                    return redirect(url_for("profile"))
 
                 # Copy data to new doc
                 new_ref.set({
