@@ -73,10 +73,6 @@ def reset_request():
     if request.method == "POST":
         email = request.form.get("email", "").strip()
 
-        # empty input check
-        if not email:
-            return render_template("reset_password.html", message="Please enter your email.")
-
         # Email format validation
         if not re.fullmatch(r"^[^@]+@[^@]+\.[A-Za-z]{2,}$", email):
             return render_template("reset_password.html", message="Please enter a valid email address.")
