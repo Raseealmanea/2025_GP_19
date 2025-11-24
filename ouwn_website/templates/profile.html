@@ -63,13 +63,13 @@
 
             <p>
                 <strong>Username:</strong><br>
-                <input type="text" name="username" value="{{ user.UserID }}" readonly required>
+                <input type="text" id="profile-username" name="username" value="{{ user.UserID }}" readonly required>
                 <small id="username-msg" class="field-msg"></small>
             </p>
 
             <p>
                 <strong>Email:</strong><br>
-                <input type="email" name="email" value="{{ user.Email }}" readonly required>
+                <input type="email" id="profile-email" name="email" value="{{ user.Email }}" readonly required>
                 <small id="email-msg" class="field-msg"></small>
             </p>
 
@@ -108,7 +108,7 @@ const discardBtn = document.getElementById('discardBtn');
 
 let isEditing = false;
 
-// Save original values for "Discard"
+// Save original values for discard
 const originalValues = {};
 inputs.forEach(input => originalValues[input.name] = input.value);
 
@@ -151,10 +151,8 @@ form.addEventListener('submit', () => {
 
 
 /* ============================
-   LIVE VALIDATION (same as signup)
+   HELPER: debounce
 ===============================*/
-
-// debounce to limit server calls
 function debounce(fn, wait) {
     let t;
     return (...args) => {
@@ -163,18 +161,22 @@ function debounce(fn, wait) {
     };
 }
 
-// AJAX validation call
+
+/* ============================
+   AJAX → /check
+===============================*/
 async function checkField(field, value) {
-    if (!value) return { ok:true, exists:false, valid:false, msg:"" };
+    if (!value) return { ok: true, exists: false, valid: false, msg: "" };
 
     try {
         const res = await fetch(`/check?field=${field}&value=${value}`);
         const data = await res.json();
+
         let msg = "";
 
         if (!data.valid) {
             msg = field === "username"
-                ? "Username must start with a letter and be 3–32 chars."
+                ? "Username must start with a CAPITAL letter and be 3–32 characters."
                 : "Please enter a valid email address.";
         } else if (data.exists) {
             msg = field === "username"
@@ -186,11 +188,14 @@ async function checkField(field, value) {
     }
     catch (e) {
         console.error(e);
-        return { ok:false, valid:false, exists:false, msg:"Server error" };
+        return { ok: false, valid: false, exists: false, msg: "Server error" };
     }
 }
 
-// update field UI colors + messages
+
+/* ============================
+   UI UPDATE
+===============================*/
 function updateFieldUI(input, msgEl, state) {
     const val = input.value.trim();
 
@@ -217,27 +222,68 @@ function updateFieldUI(input, msgEl, state) {
 
 
 /* ============================
+   LOCAL VALIDATION (before server)
+===============================*/
+function localValidate(field, value) {
+
+    if (field === "username") {
+        // Capital letter + letters/numbers/underscore + 3–32 total length
+        const regex = /^[A-Z][A-Za-z0-9_]{2,31}$/;
+
+        if (!regex.test(value)) {
+            return {
+                ok: true,
+                valid: false,
+                exists: false,
+                msg: "Username must start with a CAPITAL letter and be 3–32 characters."
+            };
+        }
+    }
+
+    return null; // means "client-side OK → now check server"
+}
+
+
+/* ============================
    ACTIVATE VALIDATION ON EDIT
 ===============================*/
 
-const usernameInput = document.getElementById("profile-username");
-const emailInput = document.getElementById("profile-email");
+// FIX: input IDs must exist in your HTML
+const usernameInput = document.querySelector("input[name='username']");
+const emailInput = document.querySelector("input[name='email']");
 const usernameMsg = document.getElementById("username-msg");
 const emailMsg = document.getElementById("email-msg");
 
 editBtn.addEventListener("click", () => {
 
     usernameInput.addEventListener("input", debounce(async () => {
-        const state = await checkField("username", usernameInput.value.trim());
+        const val = usernameInput.value.trim();
+
+        // Step 1 → local validation
+        const local = localValidate("username", val);
+        if (local) {
+            updateFieldUI(usernameInput, usernameMsg, local);
+            return;
+        }
+
+        // Step 2 → server validation
+        const state = await checkField("username", val);
         updateFieldUI(usernameInput, usernameMsg, state);
+
     }, 300));
 
+
     emailInput.addEventListener("input", debounce(async () => {
-        const state = await checkField("email", emailInput.value.trim());
+        const val = emailInput.value.trim();
+
+        // No custom local email check, go straight to server
+        const state = await checkField("email", val);
         updateFieldUI(emailInput, emailMsg, state);
+
     }, 300));
 
 });
+
 </script>
 
 </body>
