@@ -1,69 +1,304 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login • OuwN</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <title>Add Medical Note & ICD Codes</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="auth-page-body">
 
+<body class="form-page medical-note">
 
-<header class="header">
-    <div class="header-left">
-        <img src="{{ url_for('static', filename='logo.svg') }}" alt="OuwN Logo" class="logo-img">
+{% include "header.html" %}
+
+<nav class="ouwn-breadcrumb-bar" role="navigation">
+  <div class="ouwn-crumbs">
+    <a class="crumb" href="{{ url_for('dashboard') }}">
+      <i class="fa-solid fa-house"></i> <span>Dashboard</span>
+    </a>
+    <span class="sep">/</span>
+    <span class="crumb current">
+      <i class="fa-solid fa-file-medical"></i> <span>Add Medical Notes</span>
+    </span>
+  </div>
+</nav>
+
+<div id="saveMessage" class="banner"></div>
+
+<main class="container">
+  <h1>Add Medical Note</h1>
+
+  <!-- Medical Note Form -->
+  <form id="noteForm" class="card">
+    <div class="row">
+      <label for="pid">National ID / Iqama <span class="required">*</span></label>
+      <input name="pid" id="pid" type="text" value="{{ prefilled_pid }}" readonly style="background-color: lightgray;">
     </div>
-    <div class="header-right">
-        <nav class="header-nav">
-             <a href="{{ url_for('home') }}#about">About</a>
-        <a href="{{ url_for('home') }}#vision">Vision</a>
-        </nav>
+
+    <div class="row">
+      <label for="note_text">Note <span class="required">*</span></label>
+      <textarea name="note_text" id="note_text" rows="6">{{ note_text }}</textarea>
     </div>
-</header>
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    {% for category, message in messages %}
-      <div class="banner {{ category }} show">{{ message }}</div>
-    {% endfor %}
-  {% endif %}
-{% endwith %}
-
-<main class="auth-container">
-  <h2 class="auth-title">Welcome back</h2>
-  <p class="auth-subtitle">Sign in to continue caring for your patients.</p>
-
-  <form method="POST" action="{{ url_for('Authentication.login') }}" class="auth-form" autocomplete="off">
-    <label for="username">Username</label>
-    <input id="username" name="username" type="text" placeholder="Enter your username"
-           required value="{{ entered_username }}">
-
-    <label for="password">Password</label>
-    <input id="password" name="password" type="password" placeholder="Enter your password" required>
-
-    <button type="submit" class="btn">Log in</button>
   </form>
 
-  <p class="auth-meta" style="margin-top:10px">
-    Forgot your password? <a class="link-sm" href="{{ url_for('auth_reset.reset_request') }}">Reset password</a>
-  </p>
+  <!-- ICD Browser -->
+  <div class="icd-container">
+    <h2>ICD Code Browser</h2>
 
-  <p class="auth-meta">
-    Don’t have an account? <a href="{{ url_for('Authentication.signup') }}">Sign Up</a>
-  </p>
+    <div id="categoryBoxes" class="category-boxes"></div>
+    <div id="selectedCodesContainer"></div>
+
+    <div class="search-section">
+      <div class="search-bar">
+        <input type="text" id="searchBox" placeholder="🔍 Search ICD code or keyword...">
+      </div>
+      <button type="button" class="search-btn" onclick="searchICD()">Search</button>
+    </div>
+  </div>
+
+  <div id="results" style="margin-top: 10px;"></div>
+
+  <div class="row actions">
+    <button type="button" id="saveBothBtn">Save Note & ICD Codes</button>
+  </div>
 </main>
 
 <footer>
   <p>&copy; 2025 OuwN. All Rights Reserved.</p>
 </footer>
+
 <script>
-  // Automatically hide the banner after 4 seconds
-  setTimeout(() => {
-    const banner = document.querySelector('.banner.show');
-    if (banner) {
-      banner.classList.remove('show');
+  // State
+  let selectedCodes = {{ selected_icd_codes | default([]) | tojson | safe }};
+  let currentCategory = "";
+  let currentICDResults = [];   // full result list for current view
+  let renderIndex = 0;          // how many items already rendered
+  const PAGE_SIZE = 40;         // how many codes to render per batch
+
+  // Helpers 
+  function showMessage(msg, type = "success", duration = 3000) {
+    const banner = document.getElementById("saveMessage");
+    banner.textContent = msg;
+    banner.className = `banner show ${type}`;
+    setTimeout(() => (banner.className = "banner"), duration);
+  }
+
+  function updateSelectedCodesUI() {
+    const container = document.getElementById("selectedCodesContainer");
+    container.innerHTML = "";
+    selectedCodes.forEach((c) => {
+      const div = document.createElement("div");
+      div.className = "selected-code";
+      div.innerHTML = `
+        ${c.Code}
+        <span style="cursor:pointer;font-weight:bold;" onclick="removeCode('${c.Code}')">×</span>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function removeCode(code) {
+    selectedCodes = selectedCodes.filter((c) => c.Code !== code);
+
+    // Uncheck checkbox if visible
+    const cb = document.querySelector(`#results input[data-code='${code}']`);
+    if (cb) cb.checked = false;
+
+    updateSelectedCodesUI();
+  }
+
+  window.removeCode = removeCode; // so onclick in HTML string works
+
+  // Load Categories 
+  function initCategories() {
+    fetch("/icd_categories")
+      .then((res) => res.json())
+      .then((categories) => {
+        const container = document.getElementById("categoryBoxes");
+        container.innerHTML = "";
+
+        categories.forEach((cat) => {
+          const box = document.createElement("div");
+          box.className = "category-box";
+          box.textContent = cat;
+          box.onclick = () => {
+            document
+              .querySelectorAll(".category-box")
+              .forEach((b) => b.classList.remove("active"));
+            box.classList.add("active");
+            currentCategory = cat;
+            loadByCategory(cat);
+          };
+          container.appendChild(box);
+        });
+      })
+      .catch(() => {
+        showMessage("Failed to load ICD categories.", "error");
+      });
+  }
+
+  //  Load ICD by Category
+  function loadByCategory(category) {
+    fetch(`/icd_by_category/${encodeURIComponent(category)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        displayICDResults(data);
+      })
+      .catch(() => {
+        showMessage("Error loading ICD codes.", "error");
+      });
+  }
+
+  // Search 
+  function searchICD() {
+    const term = document.getElementById("searchBox").value.trim();
+    if (!term) return;
+
+    fetch(
+      `/search_icd?term=${encodeURIComponent(term)}&category=${encodeURIComponent(
+        currentCategory
+      )}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        displayICDResults(data);
+      })
+      .catch(() => {
+        showMessage("Error searching ICD codes.", "error");
+      });
+  }
+
+  window.searchICD = searchICD; // used by the Search button onclick
+
+  // Infinite Scroll Rendering
+  function displayICDResults(data) {
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
+
+    currentICDResults = data || [];
+    renderIndex = 0;
+
+    if (!currentICDResults.length) {
+      resultsDiv.innerHTML = "<p>No results found.</p>";
+      return;
     }
-  }, 4000);
+
+    // Render first batch
+    renderNextChunk();
+  }
+
+  function renderNextChunk() {
+    const resultsDiv = document.getElementById("results");
+
+    if (!currentICDResults.length) return;
+    if (renderIndex >= currentICDResults.length) return;
+
+    const end = Math.min(renderIndex + PAGE_SIZE, currentICDResults.length);
+    for (let i = renderIndex; i < end; i++) {
+      const item = currentICDResults[i];
+      const div = document.createElement("div");
+      div.className = "result-item";
+
+      const isChecked = selectedCodes.some((c) => c.Code === item.Code)
+        ? "checked"
+        : "";
+
+      div.innerHTML = `
+        <input type="checkbox" data-code="${item.Code}"
+               data-desc="${item.Description}" ${isChecked}>
+        <strong style="margin-left:5px;">${item.Code}</strong> - ${item.Description}
+      `;
+
+      resultsDiv.appendChild(div);
+    }
+
+    renderIndex = end;
+  }
+
+  function handlePageScroll() {
+    // If nothing to render or all rendered → do nothing
+    if (!currentICDResults.length || renderIndex >= currentICDResults.length) {
+      return;
+    }
+
+    const scrollPosition = window.innerHeight + window.scrollY;
+    const threshold = document.body.offsetHeight - 200; // 200px from bottom
+
+    if (scrollPosition >= threshold) {
+      renderNextChunk();
+    }
+  }
+
+  // Select and Unselect Codes 
+  function initResultsListener() {
+    document.getElementById("results").addEventListener("change", (e) => {
+      if (!e.target.matches("input[type='checkbox']")) return;
+
+      const code = e.target.dataset.code;
+      const desc = e.target.dataset.desc;
+
+      if (e.target.checked) {
+        if (!selectedCodes.find((c) => c.Code === code)) {
+          selectedCodes.push({ Code: code, Description: desc });
+        }
+      } else {
+        selectedCodes = selectedCodes.filter((c) => c.Code !== code);
+      }
+
+      updateSelectedCodesUI();
+    });
+  }
+
+  // Save Note + ICD Codes
+  function initSaveButton() {
+    document
+      .getElementById("saveBothBtn")
+      .addEventListener("click", async () => {
+        const pid = document.getElementById("pid").value.trim();
+        const note = document.getElementById("note_text").value.trim();
+
+        if (!pid) return showMessage("Patient ID is missing!", "error");
+        if (!note) return showMessage("Please enter a medical note!", "error");
+        if (selectedCodes.length === 0)
+          return showMessage("Please select at least one ICD code!", "error");
+
+        try {
+          const response = await fetch("/MedicalNotes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              pid,
+              note_text: note,
+              icd_codes: selectedCodes,
+            }),
+          });
+
+          const result = await response.json();
+
+          if (result.status === "success") {
+            showMessage("✅ Saved successfully!", "success");
+            setTimeout(
+              () => (window.location.href = result.redirect),
+              1500
+            );
+          } else {
+            showMessage("❌ " + (result.message || "Error saving data"), "error");
+          }
+        } catch (err) {
+          showMessage("An error occurred while saving.", "error");
+        }
+      });
+  }
+
+  // Init on Load
+  window.addEventListener("load", () => {
+    updateSelectedCodesUI();
+    initCategories();
+    initResultsListener();
+    initSaveButton();
+
+    // Attach infinite scroll once
+    window.addEventListener("scroll", handlePageScroll);
+  });
 </script>
 
 </body>
