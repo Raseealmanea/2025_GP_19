@@ -10,6 +10,7 @@
 
 {% include "header.html" %}
 
+<!-- Breadcrumb navigation -->
 <nav class="ouwn-breadcrumb-bar" role="navigation">
   <div class="ouwn-crumbs">
     <a class="crumb" href="{{ url_for('dashboard') }}">
@@ -30,6 +31,7 @@
   <!-- Medical Note Form -->
   <form id="noteForm" class="card">
     <div class="row">
+       <!-- Patient ID (pre-filled and read-only) -->
       <label for="pid">National ID / Iqama <span class="required">*</span></label>
       <input name="pid" id="pid" type="text" value="{{ prefilled_pid }}" readonly style="background-color: lightgray;">
     </div>
@@ -45,8 +47,10 @@
     <h2>ICD Code Browser</h2>
 
     <div id="categoryBoxes" class="category-boxes"></div>
+    <!-- Selected ICD codes appear here -->
     <div id="selectedCodesContainer"></div>
 
+    <!-- Search box -->
     <div class="search-section">
       <div class="search-bar">
         <input type="text" id="searchBox" placeholder="🔍 Search ICD code or keyword...">
@@ -67,14 +71,14 @@
 </footer>
 
 <script>
-  // State
+  // Holds user selected ICD codes
   let selectedCodes = {{ selected_icd_codes | default([]) | tojson | safe }};
-  let currentCategory = "";
-  let currentICDResults = [];   // full result list for current view
-  let renderIndex = 0;          // how many items already rendered
-  const PAGE_SIZE = 40;         // how many codes to render per batch
+  let currentCategory = "";     // Currently selected ICD category
+  let currentICDResults = [];   // Results shown in the browser
+  let renderIndex = 0;          //Tracks infinite scroll progress
+  const PAGE_SIZE = 40;         // Number of codes to load at a time
 
-  // Helpers 
+  // Show banner message
   function showMessage(msg, type = "success", duration = 3000) {
     const banner = document.getElementById("saveMessage");
     banner.textContent = msg;
@@ -82,6 +86,7 @@
     setTimeout(() => (banner.className = "banner"), duration);
   }
 
+   //UPDATE SELECTED ICD UI
   function updateSelectedCodesUI() {
     const container = document.getElementById("selectedCodesContainer");
     container.innerHTML = "";
@@ -96,10 +101,11 @@
     });
   }
 
+   //Remove selected ICD code
   function removeCode(code) {
     selectedCodes = selectedCodes.filter((c) => c.Code !== code);
 
-    // Uncheck checkbox if visible
+    // Uncheck Removed selected ICD code checkbox if visible
     const cb = document.querySelector(`#results input[data-code='${code}']`);
     if (cb) cb.checked = false;
 
@@ -116,10 +122,12 @@
         const container = document.getElementById("categoryBoxes");
         container.innerHTML = "";
 
+        // Create a box for each category
         categories.forEach((cat) => {
           const box = document.createElement("div");
           box.className = "category-box";
           box.textContent = cat;
+          // When clicked highlight the box and load category
           box.onclick = () => {
             document
               .querySelectorAll(".category-box")
@@ -186,6 +194,7 @@
     renderNextChunk();
   }
 
+  //Render a batch of ICD codes
   function renderNextChunk() {
     const resultsDiv = document.getElementById("results");
 
@@ -214,8 +223,9 @@
     renderIndex = end;
   }
 
+ // Detect scroll near bottom → load more
   function handlePageScroll() {
-    // If nothing to render or all rendered → do nothing
+    // If nothing to render or all rendered , do nothing
     if (!currentICDResults.length || renderIndex >= currentICDResults.length) {
       return;
     }
@@ -237,6 +247,7 @@
       const desc = e.target.dataset.desc;
 
       if (e.target.checked) {
+        // Add code if not already selected
         if (!selectedCodes.find((c) => c.Code === code)) {
           selectedCodes.push({ Code: code, Description: desc });
         }
@@ -248,7 +259,7 @@
     });
   }
 
-  // Save Note + ICD Codes
+  // Save Note and ICD Codes
   function initSaveButton() {
     document
       .getElementById("saveBothBtn")
