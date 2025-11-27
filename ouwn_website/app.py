@@ -1,13 +1,22 @@
 from dotenv import load_dotenv
-load_dotenv()
-
+load_dotenv() # Load environment variables from .env file
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, flash
-from firebase.Initialization import db
+# Flask → Needed
+# render_template → Used for HTML pages
+# jsonify → Used for AJAX responses
+# request → Used to read form/AJAX data
+# session → Needed for login sessions
+# redirect, url_for → Needed for redirects
+# flash → Needed for error/success messages
+from firebase.Initialization import db # Needed — Firestore reference
 from datetime import datetime, date
+# datetime → Needed for note creation time
+# date → Needed for DOB validation
 import os, json, re, uuid
-
-
-
+# os → file paths, reading .env variables  
+# json → loading icd_data.json  
+# re → regex validation  
+# uuid → unique IDs for notes + ICD records
 
 
 # Create Flask App
@@ -15,7 +24,7 @@ def create_app():
     app = Flask(__name__)
     # secret key for sessions
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "fallback-secret-key")
-    app.config["PROPAGATE_EXCEPTIONS"] = True
+    app.config["PROPAGATE_EXCEPTIONS"] = True # Allow Flask to show detailed exceptions
 
 
      # loading all blueprints (auth + reset)
@@ -29,13 +38,11 @@ def create_app():
     ICD_FILE = os.path.join(app.root_path, "static", "icd_data.json")
     if os.path.exists(ICD_FILE):
         with open(ICD_FILE, "r", encoding="utf-8") as f:
-            app.icd_data = json.load(f)
+            app.icd_data = json.load(f) # Store JSON in memory
     else:
         print("⚠️ icd_data.json missing in /static")
         app.icd_data = []
 
-
-    
     # homePage
     @app.route("/")
     def home():
@@ -45,13 +52,12 @@ def create_app():
     # DASHBOARD
     @app.route("/dashboard")
     def dashboard():
-        if 'user_id' not in session:
+        if 'user_id' not in session: # Block access if not logged in
             return redirect(url_for('Authentication.login'))
 
-        # pulling all patients from Firestore to list them in dashboard
-        patients = []
+        patients = [] # Store all patients to display
         try:
-            docs = db.collection("Patients").stream()
+            docs = db.collection("Patient").stream()
             for doc in docs:
                 data = doc.to_dict()
                 patients.append({
@@ -71,14 +77,13 @@ def create_app():
         return render_template("dashboard.html", patients=patients, msg_text=msg_text)
 
 
-    
     # ADD PATIENT
     @app.route("/add_patient", methods=["GET", "POST"])
     def add_patient():
         if 'user_id' not in session:
             return redirect(url_for('Authentication.login'))
 
-        errors = []
+        errors = [] # Collect validation errors
         # form data
         if request.method == "POST":
             pid = request.form.get("ID", "").strip()
@@ -90,16 +95,19 @@ def create_app():
             address = request.form.get("address", "").strip()
             blood = request.form.get("blood_type", "").strip()
 
-            # Validation
+            # Required fields check
             if not all([pid, name, dob, gender, phone, email, address, blood]):
                 errors.append("All fields are required.")
 
+            # ID format check (National ID must be 10 digits)
             if pid and not re.fullmatch(r'\d{10}', pid):
                 errors.append("ID must be exactly 10 digits.")
 
+            # Phone format check
             if phone and not re.fullmatch(r'^05\d{8}$', phone):
                 errors.append("Phone must start with 05 and be 10 digits.")
 
+            # Email format check
             if email and not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
                 errors.append("Invalid email format.")
             
@@ -109,15 +117,23 @@ def create_app():
                     dob_date = datetime.strptime(dob, "%Y-%m-%d").date()
                     if dob_date > date.today():
                         errors.append("Date of Birth cannot be in the future.")
+
+                    # 2) Age must be <= 130
+                    age = date.today().year - dob_date.year
+                    if (date.today().month, date.today().day) < (dob_date.month, dob_date.day):
+                        age -= 1
+
+                    if age > 130:
+                        errors.append("Age cannot exceed 130 years.")
                 except ValueError:
                     errors.append("Invalid date format.")
             # check if patient exists already
             if not errors:
-                if db.collection("Patients").document(pid).get().exists:
+                if db.collection("Patient").document(pid).get().exists:
                     errors.append("Patient already exists with this ID.")
             # save to Firestore if everything is good
             if not errors:
-                db.collection("Patients").document(pid).set({
+                db.collection("Patient").document(pid).set({
                     "ID": pid,                     # PATIENT ID = National ID
                     "FullName": name,
                     "DOB": dob,
@@ -157,11 +173,11 @@ def create_app():
             if not pid or not note_text or not icd_codes:
                 return jsonify({"status": "error", "message": "Missing fields"}), 400
 
-            patient_ref = db.collection("Patients").document(pid)
+            patient_ref = db.collection("Patient").document(pid)
 
             # Generate unique Note ID
             note_id = "note_id_" + uuid.uuid4().hex[:8]
-            note_ref = patient_ref.collection("MedicalNotes").document(note_id)
+            note_ref = patient_ref.collection("MedicalNote").document(note_id)
 
              # saving the note
             note_ref.set({
@@ -171,10 +187,10 @@ def create_app():
                 "CreatedBy": session.get("user_id")
             })
 
-            # ICD IDs starting with icdcode_id_XXXXX
+            # Generate unique icd ID
             icd_id = "icdcode_id_" + uuid.uuid4().hex[:8]
+            icd_doc_ref = note_ref.collection("ICDcode").document(icd_id)
 
-            icd_doc_ref = note_ref.collection("ICDCode").document(icd_id)
              # saving the icd code
             icd_doc_ref.set({
                 "ICD_ID": icd_id,
@@ -197,23 +213,22 @@ def create_app():
             return jsonify({"error": "Unauthorized"}), 401
 
         v = request.args.get("v", "").strip()
-        exists = db.collection("Patients").document(v).get().exists if v else False
+        exists = db.collection("Patient").document(v).get().exists if v else False
         return jsonify({"exists": exists})
 
-
     
-    # ICD ROUTES (secure)
+    # extract categories from JSON 
     @app.route("/icd_categories")
     def icd_categories():
         if 'user_id' not in session:
             return jsonify({"error": "Unauthorized"}), 401
 
-        # extract categories from JSON
         categories = sorted({cat["Category"] for cat in app.icd_data})
-        categories.insert(0, "All")
+        categories.insert(0, "All") # Add "All" option
         return jsonify(categories)
 
 
+    # Return ICD codes by category
     @app.route("/icd_by_category/<path:category>")
     def icd_by_category(category):
         if 'user_id' not in session:
@@ -222,11 +237,11 @@ def create_app():
         results = []
 
         if category.lower() == "all":
-            # return everything
+             # Return all codes
             for cat in app.icd_data:
                 results.extend(cat.get("Codes", []))
         else:
-            # return specific category only
+            # Return only selected category
             for cat in app.icd_data:
                 if cat["Category"].lower() == category.lower():
                     results = cat.get("Codes", [])
@@ -234,7 +249,7 @@ def create_app():
 
         return jsonify(results[:100])
 
-
+    # Search ICD codes by term and code
     @app.route("/search_icd")
     def search_icd():
         if 'user_id' not in session:
@@ -259,9 +274,7 @@ def create_app():
         unique = {item["Code"]: item for item in results}
         return jsonify(list(unique.values())[:30])
 
-
-    
-    
+ 
     # PROFILE
     @app.route("/profile", methods=["GET", "POST"])
     def profile():
@@ -272,6 +285,7 @@ def create_app():
         old_ref = db.collection('HealthCareP').document(old_id)
         doc = old_ref.get()
 
+        # Load current user data
         current_user = doc.to_dict() if doc.exists else {"Name": "", "UserID": "", "Email": ""}
 
         # Update Profile
@@ -293,8 +307,8 @@ def create_app():
                     return redirect(url_for("profile"))
 
                 # Username validation
-                if not re.fullmatch(r"^[A-Za-z][A-Za-z0-9._-]{2,31}$", new_username):
-                    flash("Username must start with a letter and be 3–32 characters.", "error")
+                if not re.fullmatch(r"^[A-Z][A-Za-z0-9._-]{2,31}$", new_username):
+                    flash("Username must start with a CAPITAL letter and be 3–32 characters.", "error")
                     return redirect(url_for("profile"))
                 
                 # Check if new email exists
@@ -306,10 +320,11 @@ def create_app():
                     
                 # Check if new username exists
                 if new_username != old_id:
-                    new_ref = db.collection("HealthCareP").document(new_username)
-                    if new_ref.get().exists:
-                        flash("Username already taken.", "error")
-                        return redirect(url_for("profile"))    
+                    users = db.collection("HealthCareP").stream()
+                    for u in users:
+                        if u.id.lower() == new_username.lower() and u.id != old_id:
+                            flash("Username already taken.", "error")
+                            return redirect(url_for("profile"))   
 
                 # updating without username change 
                 if new_username == old_id:
@@ -345,23 +360,23 @@ def create_app():
                 new_doctor_id = new_username
 
                 # Update Patients.CreatedBy
-                patients = db.collection("Patients").where("CreatedBy", "==", old_doctor_id).stream()
+                patients = db.collection("Patient").where("CreatedBy", "==", old_doctor_id).stream()
                 for p in patients:
                     p.reference.update({"CreatedBy": new_doctor_id})
 
                 # Update MedicalNotes.CreatedBy
-                patients_all = db.collection("Patients").stream()
+                patients_all = db.collection("Patient").stream()
                 for p in patients_all:
-                    notes = p.reference.collection("MedicalNotes").where("CreatedBy", "==", old_doctor_id).stream()
+                    notes = p.reference.collection("MedicalNote").where("CreatedBy", "==", old_doctor_id).stream()
                     for n in notes:
                         n.reference.update({"CreatedBy": new_doctor_id})
 
                 # Update ICDCode.AdjustedBy
-                patients_all = db.collection("Patients").stream()
+                patients_all = db.collection("Patient").stream()
                 for p in patients_all:
-                    notes = p.reference.collection("MedicalNotes").stream()
+                    notes = p.reference.collection("MedicalNote").stream()
                     for n in notes:
-                        icds = n.reference.collection("ICDCode").where("AdjustedBy", "==", old_doctor_id).stream()
+                        icds = n.reference.collection("ICDcode").where("AdjustedBy", "==", old_doctor_id).stream()
                         for icd in icds:
                             icd.reference.update({"AdjustedBy": new_doctor_id})
 
@@ -375,7 +390,6 @@ def create_app():
         return render_template("profile.html", user=current_user)
 
 
-
     # LOGOUT
     @app.route("/logout")
     def logout():
@@ -383,8 +397,6 @@ def create_app():
         return redirect(url_for("home"))
 
     return app
-
-
 
 # Local Development
 if __name__ == "__main__":
