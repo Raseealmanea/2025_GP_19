@@ -296,10 +296,6 @@ def create_app():
             new_username = request.form.get("username", "").strip()
 
             try:
-                # Required fields check
-                if not new_name or not new_email or not new_username:
-                    flash("All fields are required.", "error")
-                    return redirect(url_for("profile"))
 
                 # Email validation
                 if not re.match(r"^[^@]+@[^@]+\.[^@]+$", new_email):
@@ -310,24 +306,28 @@ def create_app():
                 if not re.fullmatch(r"^[A-Z][A-Za-z0-9._-]{2,31}$", new_username):
                     flash("Username must start with a CAPITAL letter and be 3–32 characters.", "error")
                     return redirect(url_for("profile"))
+   
+                # No changes → do nothing and show no message
+                if (new_name == current_user["Name"] 
+                    and new_email == current_user["Email"] 
+                    and new_username.strip().lower() == old_id.strip().lower()):
+                    return redirect(url_for("profile"))
                 
-                # Check if new email exists
+                # Check if email belongs to another user
                 email_query = db.collection("HealthCareP").where("Email", "==", new_email).stream()
                 for docx in email_query:
-                    if docx.id != old_id:  # email belongs to another user
-                        flash("Email already exists.", "error")
-                        return redirect(url_for("profile"))
+                    if docx.id != old_id:  # email belongs to different user
+                        return redirect(url_for("profile"))  # silently ignore update
                     
-                # Check if new username exists
-                if new_username != old_id:
-                    users = db.collection("HealthCareP").stream()
-                    for u in users:
-                        if u.id.lower() == new_username.lower() and u.id != old_id:
-                            flash("Username already taken.", "error")
-                            return redirect(url_for("profile"))   
+                if new_username.strip().lower() != old_id.strip().lower():
+                    all_users = db.collection("HealthCareP").stream()
+                    for u in all_users:
+                        if u.id.strip().lower() == new_username.strip().lower():
+                            return redirect(url_for("profile"))  # silent abort
 
+    
                 # updating without username change 
-                if new_username == old_id:
+                if new_username.strip().lower() == old_id.strip().lower():
                     old_ref.update({
                         "Name": new_name,
                         "Email": new_email
@@ -336,13 +336,15 @@ def create_app():
                     return redirect(url_for("profile"))
 
                 # If username CHANGED , create new doc 
-                new_ref = db.collection("HealthCareP").document(new_username)
+                clean_username = new_username.strip()
+                new_ref = db.collection("HealthCareP").document(clean_username)
+
 
                 # Copy data to new doc
                 new_ref.set({
                     "Name": new_name,
                     "Email": new_email,
-                    "UserID": new_username,
+                    "UserID": clean_username,
                     "Password": current_user["Password"]
                 })
 
@@ -350,7 +352,7 @@ def create_app():
                 old_ref.delete()
 
                 # Update session
-                session['user_id'] = new_username
+                session['user_id'] = clean_username
                 session['user_name'] = new_name
                 session['user_email'] = new_email
 
@@ -388,6 +390,64 @@ def create_app():
                 return redirect(url_for("profile"))
 
         return render_template("profile.html", user=current_user)
+
+    @app.route("/check")
+    def check_unique():
+        if 'user_id' not in session:
+            return jsonify({"ok": False, "valid": False, "exists": False})
+
+        field = request.args.get("field", "")
+        value = request.args.get("value", "").strip()
+        current_user = session['user_id'].strip().lower()
+
+        # 1) Validate empty field
+        if not field or not value:
+            return jsonify({"ok": True, "valid": False, "exists": False})
+
+        # 2) Username validation
+        if field == "username":
+            value_lower = value.lower()
+
+            # Local validation rule (Capital letter, 3-32 chars)
+            if not re.fullmatch(r"^[A-Z][A-Za-z0-9._-]{2,31}$", value):
+                return jsonify({"ok": True, "valid": False, "exists": False})
+
+            # Ignore your own username
+            if value_lower == current_user:
+                return jsonify({"ok": True, "valid": True, "exists": False})
+
+            # Check Firestore for duplicates
+            all_users = db.collection("HealthCareP").stream()
+            for u in all_users:
+                if u.id.strip().lower() == value_lower:
+                    return jsonify({"ok": True, "valid": True, "exists": True})
+
+            return jsonify({"ok": True, "valid": True, "exists": False})
+
+
+        # 3) Email validation
+        if field == "email":
+            if not re.match(r"^[^@]+@[^@]+\.[^@]+$", value):
+                return jsonify({"ok": True, "valid": False, "exists": False})
+
+            value_lower = value.lower()
+            # Ignore your own email
+            # (email stored inside Firestore doc)
+            user_doc = db.collection("HealthCareP").document(current_user).get()
+            if user_doc.exists:
+                if user_doc.to_dict().get("Email", "").strip().lower() == value_lower:
+                    return jsonify({"ok": True, "valid": True, "exists": False})
+
+            # Check duplicates
+            email_query = db.collection("HealthCareP").where("Email", "==", value).stream()
+            for doc in email_query:
+                if doc.id != current_user:
+                    return jsonify({"ok": True, "valid": True, "exists": True})
+
+            return jsonify({"ok": True, "valid": True, "exists": False})
+
+        # 4) Default fallback
+        return jsonify({"ok": False, "valid": False, "exists": False})
 
 
     # LOGOUT
