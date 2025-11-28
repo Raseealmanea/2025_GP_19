@@ -160,6 +160,21 @@ function debounce(fn, wait) {
 async function checkField(field, value) {
     if (!value) return { ok: true, exists: false, valid: false, msg: "" };
 
+    // Get original username & email from the page (your own data)
+    const originalUsername = originalValues["username"].trim().toLowerCase();
+    const originalEmail = originalValues["email"].trim().toLowerCase();
+    const valLower = value.trim().toLowerCase();
+
+    // --- Ignore your own username ---
+    if (field === "username" && valLower === originalUsername) {
+        return { ok: true, valid: true, exists: false, msg: "" };
+    }
+
+    // --- Ignore your own email ---
+    if (field === "email" && valLower === originalEmail) {
+        return { ok: true, valid: true, exists: false, msg: "" };
+    }
+
     try {
         const res = await fetch(`/check?field=${field}&value=${value}`);
         const data = await res.json();
@@ -183,6 +198,7 @@ async function checkField(field, value) {
         return { ok: false, valid: false, exists: false, msg: "Server error" };
     }
 }
+
 
 
 /*UI UPDATE (valid/invalid)*/
@@ -243,10 +259,10 @@ const emailMsg = document.getElementById("email-msg");
 editBtn.addEventListener("click", () => {
 
     usernameInput.addEventListener("input", debounce(async () => {
-        const val = usernameInput.value.trim();
+        const val = usernameInput.value.trim().toLowerCase();
 
         // local validation
-        const local = localValidate("username", val);
+        const local = localValidate("username", usernameInput.value.trim());
         if (local) {
             updateFieldUI(usernameInput, usernameMsg, local);
             return;
