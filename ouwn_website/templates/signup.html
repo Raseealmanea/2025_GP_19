@@ -103,7 +103,7 @@ async function checkField(field, value) {
 
         if (!data.valid) {
             msg = (field === "username")
-                ? "Username must start with a letter and be 3–32 chars."
+                ? "Username must start with a capital letter and be 3–32 chars."
                 : "Please enter a valid email address.";
         }
         else if (data.exists) {
