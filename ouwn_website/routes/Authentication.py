@@ -135,8 +135,8 @@ def signup():
             return render_template("signup.html", entered=entered)
 
         # Username format: must begin with letter, 3–32 characters
-        if not re.fullmatch(r"^[A-Za-z][A-Za-z0-9._-]{2,31}$", username):
-            flash("Username must start with a letter and be 3–32 characters.", "error")
+        if not re.fullmatch(r"^[A-Z][A-Za-z0-9._-]{2,31}$", username):
+            flash("Username must start with a capital  letter and be 3–32 characters.", "error")
             return render_template("signup.html", entered=entered)
 
         # Password checks
@@ -245,7 +245,7 @@ def check_field():
     try:
          # Username validation
         if field == "username":
-            result["valid"] = bool(re.fullmatch(r"^[A-Za-z][A-Za-z0-9._-]{2,31}$", value))
+            result["valid"] = bool(re.fullmatch(r"^[A-Z][A-Za-z0-9._-]{2,31}$", value))
             if result["valid"]:
                 value_lower = value.lower()
 
