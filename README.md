@@ -19,8 +19,6 @@ The OUWN platform is developed using a combination of web and machine learning t
   **Firebase:** Cloud-based tools that help manage authentication and data storage.
   - ![Firestore](https://img.shields.io/badge/Firestore-FFCA28?style=flat&logo=firebase&logoColor=black)
     **Cloud Firestore:** NoSQL document database used for storing application data.
-  - ![Firebase Auth](https://img.shields.io/badge/Firebase%20Auth-FFCA28?style=flat&logo=firebase&logoColor=black)
-    **Firebase Authentication:** Handles user sign-up, login, and secure access.
 
 ### 🚀 Launching OuwN App
 The production version of the system is deployed on Render and can be accessed at:
