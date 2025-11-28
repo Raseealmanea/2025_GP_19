@@ -1,0 +1,6 @@
+name: HuggingFaceTokenizer
+configs:
+  model_path: /content/drive/MyDrive/RoBERTa-base-PM-M3-Voc/RoBERTa-base-PM-M3-Voc-hf
+  max_length: 512
+  truncation: true
+  padding: max_length

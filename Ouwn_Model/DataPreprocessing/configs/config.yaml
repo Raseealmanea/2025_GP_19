@@ -1,0 +1,29 @@
+defaults:
+  - _self_
+  - data: mimiciv_icd10
+  - dataset: huggingface
+  - dataloader: defaults
+  - model: plm_icd
+  - text_encoder: defaults
+  - trainer: defaults
+  - optimizer: adamw
+  - lr_scheduler: warmup_linear_decay
+  - label_transform: one_hot
+  - text_transform: seq_tokens
+  - metrics: defaults
+  - lookup: defaults
+  - callbacks: mean_average_precision
+  - experiment: plm_icd
+  
+
+hydra:
+  output_subdir: null
+seed: 1337
+deterministic: false
+gpu: [0]
+name: null
+debug: false
+load_model: null # The path where to find the model, text encoder and label encoder
+
+  
+  
