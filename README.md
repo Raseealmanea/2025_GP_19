@@ -22,6 +22,6 @@ The OUWN platform is developed using a combination of web and machine learning t
   - ![Firebase Auth](https://img.shields.io/badge/Firebase%20Auth-FFCA28?style=flat&logo=firebase&logoColor=black)
     **Firebase Authentication:** Handles user sign-up, login, and secure access.
 
-### 🚀 Launching InsulinSync App
+### 🚀 Launching OuwN App
 The production version of the system is deployed on Render and can be accessed at:
 https://ouwn.onrender.com
