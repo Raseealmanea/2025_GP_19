@@ -164,10 +164,6 @@ def reset_password(token):
         password = request.form.get("password", "")
         confirm = request.form.get("confirm_password", "")
 
-        # Empty fields
-        if not password or not confirm:
-            return render_template("reset_token.html", message="Please fill out both fields.")
-
         # Match check
         if password != confirm:
             return render_template("reset_token.html", message="Passwords do not match.")
